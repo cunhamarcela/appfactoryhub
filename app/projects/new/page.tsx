@@ -69,7 +69,7 @@ export default function NewProjectPage() {
         throw new Error(error.error || 'Failed to create project')
       }
 
-      const projectData = await projectResponse.json()
+      await projectResponse.json()
 
       // Step 3: Write Playbook files to repository
       const playbookFiles = [

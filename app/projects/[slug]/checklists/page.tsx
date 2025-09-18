@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -44,19 +44,8 @@ export default function ChecklistsPage({ params }: ChecklistsPageProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  if (status === "loading") {
-    return <div>Loading...</div>
-  }
-
-  if (!session) {
-    redirect("/api/auth/signin")
-  }
-
-  useEffect(() => {
-    fetchProjectAndChecklists()
-  }, [params.slug])
-
-  const fetchProjectAndChecklists = async () => {
+  const fetchProjectAndChecklists = useCallback(async () => {
+    if (!session) return
     try {
       setLoading(true)
       setError(null)
@@ -133,6 +122,18 @@ export default function ChecklistsPage({ params }: ChecklistsPageProps) {
     } finally {
       setLoading(false)
     }
+  }, [session, params.slug])
+
+  useEffect(() => {
+    fetchProjectAndChecklists()
+  }, [fetchProjectAndChecklists])
+
+  if (status === "loading") {
+    return <div>Loading...</div>
+  }
+
+  if (!session) {
+    redirect("/api/auth/signin")
   }
 
   const handleItemToggle = async (checklistId: string, itemId: string, done: boolean) => {

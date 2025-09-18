@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge"
 import { 
   ArrowLeft, 
   Github, 
-  ExternalLink, 
   Kanban, 
   CheckSquare, 
   FileText, 

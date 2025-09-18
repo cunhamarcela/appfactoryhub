@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Rocket, Code, Search, Filter, RefreshCw, Github } from "lucide-react"
+import { Plus, Rocket, Code, Search, RefreshCw, Github } from "lucide-react"
 import Link from "next/link"
 
 interface Project {
@@ -31,19 +31,8 @@ export default function ProjectsPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
 
-  if (status === "loading") {
-    return <div>Loading...</div>
-  }
-
-  if (!session) {
-    redirect("/api/auth/signin")
-  }
-
-  useEffect(() => {
-    fetchProjects()
-  }, [])
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
+    if (!session) return
     try {
       setLoading(true)
       setError(null)
@@ -61,6 +50,18 @@ export default function ProjectsPage() {
     } finally {
       setLoading(false)
     }
+  }, [session])
+
+  useEffect(() => {
+    fetchProjects()
+  }, [fetchProjects])
+
+  if (status === "loading") {
+    return <div>Loading...</div>
+  }
+
+  if (!session) {
+    redirect("/api/auth/signin")
   }
 
   const filteredProjects = projects.filter(project =>

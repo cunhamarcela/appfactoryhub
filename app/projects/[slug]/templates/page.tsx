@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, RefreshCw, FileText } from "lucide-react"
+import { ArrowLeft, RefreshCw } from "lucide-react"
 import Link from "next/link"
 import { TemplateViewer } from "@/components/TemplateViewer"
 
@@ -40,19 +40,8 @@ export default function TemplatesPage({ params }: TemplatesPageProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  if (status === "loading") {
-    return <div>Loading...</div>
-  }
-
-  if (!session) {
-    redirect("/api/auth/signin")
-  }
-
-  useEffect(() => {
-    fetchProjectAndTemplates()
-  }, [params.slug])
-
-  const fetchProjectAndTemplates = async () => {
+  const fetchProjectAndTemplates = useCallback(async () => {
+    if (!session) return
     try {
       setLoading(true)
       setError(null)
@@ -81,6 +70,18 @@ export default function TemplatesPage({ params }: TemplatesPageProps) {
     } finally {
       setLoading(false)
     }
+  }, [session, params.slug])
+
+  useEffect(() => {
+    fetchProjectAndTemplates()
+  }, [fetchProjectAndTemplates])
+
+  if (status === "loading") {
+    return <div>Loading...</div>
+  }
+
+  if (!session) {
+    redirect("/api/auth/signin")
   }
 
   const generateTemplates = (project: Project): Template[] => {

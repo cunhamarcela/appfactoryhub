@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
-import { redirect, notFound } from "next/navigation"
+import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, RefreshCw } from "lucide-react"
 import Link from "next/link"
@@ -40,19 +40,9 @@ export default function BoardPage({ params }: BoardPageProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  if (status === "loading") {
-    return <div>Loading...</div>
-  }
-
-  if (!session) {
-    redirect("/api/auth/signin")
-  }
-
-  useEffect(() => {
-    fetchProjectAndTasks()
-  }, [params.slug])
-
-  const fetchProjectAndTasks = async () => {
+  const fetchProjectAndTasks = useCallback(async () => {
+    if (!session) return
+    
     try {
       setLoading(true)
       setError(null)
@@ -72,8 +62,7 @@ export default function BoardPage({ params }: BoardPageProps) {
       
       setProject(currentProject)
 
-      // For now, we'll create mock tasks since we don't have a direct API to fetch tasks by project
-      // In a real implementation, you'd have an API endpoint like /api/projects/[slug]/tasks
+      // Mock tasks data
       const mockTasks: Task[] = [
         {
           id: '1',
@@ -148,7 +137,11 @@ export default function BoardPage({ params }: BoardPageProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [session, params.slug])
+
+  useEffect(() => {
+    fetchProjectAndTasks()
+  }, [fetchProjectAndTasks])
 
   const handleTaskUpdate = async (taskId: string, status: 'todo' | 'doing' | 'done') => {
     try {
@@ -175,6 +168,14 @@ export default function BoardPage({ params }: BoardPageProps) {
       console.error('Error updating task:', error)
       throw error
     }
+  }
+
+  if (status === "loading") {
+    return <div>Loading...</div>
+  }
+
+  if (!session) {
+    redirect("/api/auth/signin")
   }
 
   if (loading) {
