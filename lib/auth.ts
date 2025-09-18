@@ -10,6 +10,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     GitHubProvider({
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
+      authorization: {
+        params: {
+          scope: "read:user user:email repo"
+        }
+      }
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -22,20 +27,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    session: async ({ session, token }) => {
-      if (session?.user && token?.sub) {
-        session.user.id = token.sub
+    session: async ({ session, user }) => {
+      if (session?.user && user?.id) {
+        session.user.id = user.id
       }
       return session
     },
-    jwt: async ({ user, token }) => {
-      if (user) {
-        token.uid = user.id
-      }
-      return token
-    },
   },
   session: {
-    strategy: "jwt",
+    strategy: "database",
   },
 })

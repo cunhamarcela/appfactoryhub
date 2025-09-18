@@ -61,8 +61,12 @@ export default function ProjectsPage() {
     return <div>Loading...</div>
   }
 
-  if (!session) {
+  if (status === "unauthenticated") {
     redirect("/api/auth/signin")
+  }
+
+  if (!session) {
+    return <div>Loading...</div>
   }
 
   const filteredProjects = projects.filter(project =>
