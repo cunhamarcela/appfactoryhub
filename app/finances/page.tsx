@@ -1,45 +1,137 @@
-import { auth } from "@/lib/auth"
+"use client"
+
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { DollarSign, TrendingUp, Plus, CreditCard, Server, Users, Calendar } from "lucide-react"
+import { DollarSign, TrendingUp, Plus, CreditCard, Server, Users, Calendar, RefreshCw } from "lucide-react"
 
-export default async function FinancesPage() {
-  const session = await auth()
+interface FinanceData {
+  total_monthly: number
+  by_provider: Record<string, number>
+  by_category: Record<string, number>
+  per_project_user_cost: Record<string, number>
+  project_totals: Record<string, number>
+  recent_records: Array<{
+    id: string
+    description: string
+    amount: number
+    currency: string
+    provider: string
+    category: string
+    projectName?: string
+    createdAt: string
+  }>
+  summary: {
+    total_records: number
+    recurring_records: number
+    active_projects: number
+    top_provider: string | null
+  }
+}
+
+export default function FinancesPage() {
+  const { data: session, status } = useSession()
+  const [financialData, setFinancialData] = useState<FinanceData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  if (status === "loading") {
+    return <div>Loading...</div>
+  }
 
   if (!session) {
     redirect("/api/auth/signin")
   }
 
-  // Mock data - will be replaced with real API data
-  const financialData = {
-    totalMonthly: 127,
-    previousMonth: 104,
-    breakdown: {
-      tools: 89, // Cursor + ChatGPT + Vercel + etc
-      infrastructure: 23, // Firebase/Supabase
-      perUser: 15
-    },
-    providers: [
-      { name: "Cursor", category: "tool", amount: 20, recurring: true, period: "monthly" },
-      { name: "ChatGPT Plus", category: "tool", amount: 20, recurring: true, period: "monthly" },
-      { name: "GitHub Copilot", category: "tool", amount: 10, recurring: true, period: "monthly" },
-      { name: "Vercel Pro", category: "tool", amount: 20, recurring: true, period: "monthly" },
-      { name: "Figma", category: "tool", amount: 12, recurring: true, period: "monthly" },
-      { name: "Notion", category: "tool", amount: 8, recurring: true, period: "monthly" },
-      { name: "Firebase", category: "infrastructure", amount: 15, recurring: true, period: "monthly" },
-      { name: "Supabase", category: "infrastructure", amount: 8, recurring: true, period: "monthly" }
-    ],
-    projectCosts: [
-      { name: "E-commerce Platform", monthly: 25, users: 150, costPerUser: 0.17 },
-      { name: "Task Manager", monthly: 18, users: 89, costPerUser: 0.20 },
-      { name: "Finance Tracker", monthly: 12, users: 45, costPerUser: 0.27 }
-    ]
+  useEffect(() => {
+    fetchFinancialData()
+  }, [])
+
+  const fetchFinancialData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const response = await fetch('/api/finance/aggregate')
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch financial data')
+      }
+      
+      const data = await response.json()
+      setFinancialData(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load financial data')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const monthlyChange = financialData.totalMonthly - financialData.previousMonth
-  const changePercentage = ((monthlyChange / financialData.previousMonth) * 100).toFixed(1)
+  if (loading) {
+    return (
+      <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex items-center justify-center h-64">
+            <RefreshCw className="w-8 h-8 animate-spin" style={{ color: 'var(--foreground-secondary)' }} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !financialData) {
+    return (
+      <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+        <div className="container mx-auto px-6 py-8">
+          <div className="modern-card p-12 text-center">
+            <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
+              Erro ao carregar dados financeiros
+            </h3>
+            <p className="mb-6" style={{ color: 'var(--foreground-secondary)' }}>
+              {error || 'Dados não disponíveis'}
+            </p>
+            <Button onClick={fetchFinancialData} className="gradient-primary text-white rounded-xl">
+              Tentar Novamente
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Calculate previous month (mock for now)
+  const previousMonth = financialData.total_monthly * 0.85 // Mock 15% increase
+  const monthlyChange = financialData.total_monthly - previousMonth
+  const changePercentage = previousMonth > 0 ? ((monthlyChange / previousMonth) * 100).toFixed(1) : '0'
   const isIncrease = monthlyChange > 0
+
+  // Transform data for display
+  const mockFinancialData = {
+    totalMonthly: financialData.total_monthly,
+    previousMonth: previousMonth,
+    breakdown: {
+      tools: financialData.by_category.tool || 0,
+      infrastructure: financialData.by_category.infra || 0,
+      perUser: financialData.by_category.user_cost || 0
+    },
+    providers: Object.entries(financialData.by_provider).map(([name, amount]) => ({
+      name,
+      category: "tool", // This could be enhanced to track actual categories
+      amount,
+      recurring: true,
+      period: "monthly"
+    })),
+    projectCosts: Object.entries(financialData.project_totals).map(([slug, total]) => ({
+      name: slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      monthly: total,
+      users: 100, // Mock - this would come from analytics
+      costPerUser: financialData.per_project_user_cost[slug] || 0
+    }))
+  }
+
+  // monthlyChange and related calculations moved up
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -76,10 +168,20 @@ export default async function FinancesPage() {
               Controle completo dos custos dos seus projetos
             </p>
           </div>
-          <Button className="gradient-primary text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <Plus className="w-5 h-5 mr-2" />
-            Adicionar Custo
-          </Button>
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline" 
+              className="rounded-xl"
+              onClick={fetchFinancialData}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Atualizar
+            </Button>
+            <Button className="gradient-primary text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <Plus className="w-5 h-5 mr-2" />
+              Adicionar Custo
+            </Button>
+          </div>
         </div>
 
         {/* Summary Cards */}
@@ -96,7 +198,7 @@ export default async function FinancesPage() {
               </Badge>
             </div>
             <div className="text-3xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
-              ${financialData.totalMonthly}
+              R$ {mockFinancialData.totalMonthly.toFixed(2)}
             </div>
             <p className="text-sm font-medium" style={{ color: 'var(--foreground-secondary)' }}>
               Total Mensal
@@ -112,7 +214,7 @@ export default async function FinancesPage() {
               </div>
             </div>
             <div className="text-3xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
-              ${financialData.breakdown.tools}
+              R$ {mockFinancialData.breakdown.tools.toFixed(2)}
             </div>
             <p className="text-sm font-medium" style={{ color: 'var(--foreground-secondary)' }}>
               Ferramentas
@@ -128,7 +230,7 @@ export default async function FinancesPage() {
               </div>
             </div>
             <div className="text-3xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
-              ${financialData.breakdown.infrastructure}
+              R$ {mockFinancialData.breakdown.infrastructure.toFixed(2)}
             </div>
             <p className="text-sm font-medium" style={{ color: 'var(--foreground-secondary)' }}>
               Infraestrutura
@@ -144,7 +246,7 @@ export default async function FinancesPage() {
               </div>
             </div>
             <div className="text-3xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
-              ${financialData.breakdown.perUser}
+              R$ {mockFinancialData.breakdown.perUser.toFixed(2)}
             </div>
             <p className="text-sm font-medium" style={{ color: 'var(--foreground-secondary)' }}>
               Por Usuário
@@ -164,7 +266,7 @@ export default async function FinancesPage() {
               </Button>
             </div>
             <div className="space-y-4">
-              {financialData.providers.map((provider, index) => (
+              {mockFinancialData.providers.map((provider, index) => (
                 <div key={index} className="flex items-center justify-between p-4 border rounded-xl hover:shadow-sm transition-all duration-300" style={{ borderColor: 'var(--border)' }}>
                   <div className="flex items-center space-x-4">
                     <div className={`w-10 h-10 ${getCategoryColor(provider.category)} rounded-xl flex items-center justify-center`}>
@@ -184,7 +286,7 @@ export default async function FinancesPage() {
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>
-                      ${provider.amount}
+                      R$ {provider.amount.toFixed(2)}
                     </div>
                     <div className="text-xs" style={{ color: 'var(--foreground-secondary)' }}>
                       /mês
@@ -206,14 +308,14 @@ export default async function FinancesPage() {
               </Button>
             </div>
             <div className="space-y-4">
-              {financialData.projectCosts.map((project, index) => (
+              {mockFinancialData.projectCosts.map((project, index) => (
                 <div key={index} className="p-4 border rounded-xl" style={{ borderColor: 'var(--border)' }}>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>
                       {project.name}
                     </h3>
                     <div className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>
-                      ${project.monthly}
+                      R$ {project.monthly.toFixed(2)}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -223,7 +325,7 @@ export default async function FinancesPage() {
                     </div>
                     <div>
                       <span style={{ color: 'var(--foreground-secondary)' }}>Por usuário: </span>
-                      <span className="font-medium" style={{ color: 'var(--foreground)' }}>${project.costPerUser}</span>
+                      <span className="font-medium" style={{ color: 'var(--foreground)' }}>R$ {project.costPerUser.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

@@ -32,22 +32,181 @@ export default function NewProjectPage() {
     setLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // In real implementation, this would:
-      // 1. Create GitHub repo from template
-      // 2. Write initial files
-      // 3. Save project to database
-      // 4. Create initial tasks and checklists
-      
+      // Step 1: Create GitHub repository from template
+      const repoResponse = await fetch('/api/github/create-repo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.slug,
+          description: formData.description || `${formData.name} - Criado pelo App Factory Hub`
+        })
+      })
+
+      if (!repoResponse.ok) {
+        const error = await repoResponse.json()
+        throw new Error(error.error || 'Failed to create repository')
+      }
+
+      const repoData = await repoResponse.json()
+
+      // Step 2: Create project in database
+      const projectResponse = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          slug: formData.slug,
+          niche: formData.niche,
+          stack: formData.stack,
+          description: formData.description,
+          repoUrl: repoData.repoUrl,
+          repoFullName: repoData.fullName
+        })
+      })
+
+      if (!projectResponse.ok) {
+        const error = await projectResponse.json()
+        throw new Error(error.error || 'Failed to create project')
+      }
+
+      const projectData = await projectResponse.json()
+
+      // Step 3: Write Playbook files to repository
+      const playbookFiles = [
+        {
+          path: "AGENTS.md",
+          content: getAgentsContent(formData),
+          message: "chore: add AGENTS.md from App Factory Playbook"
+        },
+        {
+          path: "APP_SPEC_TEMPLATE.md", 
+          content: getAppSpecContent(formData),
+          message: "chore: add APP_SPEC_TEMPLATE.md"
+        },
+        {
+          path: "README.md",
+          content: getReadmeContent(formData),
+          message: "chore: update README with project info"
+        }
+      ]
+
+      await fetch('/api/github/write-files', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: repoData.fullName,
+          files: playbookFiles
+        })
+      })
+
+      // Step 4: Seed project with initial tasks and checklists
+      await fetch(`/api/projects/${formData.slug}/seed`, {
+        method: 'POST'
+      })
+
+      // Success! Redirect to project page
       router.push(`/projects/${formData.slug}`)
+      
     } catch (error) {
       console.error('Error creating project:', error)
+      alert(error instanceof Error ? error.message : 'Failed to create project')
     } finally {
       setLoading(false)
     }
   }
+
+  // Helper functions to generate Playbook content
+  const getAgentsContent = (data: typeof formData) => `# AGENTS.md
+
+## Projeto: ${data.name}
+
+### Stack: ${data.stack}
+### Nicho: ${data.niche || 'Não especificado'}
+
+Este projeto foi criado usando o App Factory Hub e segue o Playbook padrão.
+
+## Próximos Passos
+
+1. Configure as variáveis de ambiente
+2. Execute o setup inicial do banco de dados
+3. Siga o board de tarefas para desenvolvimento
+4. Use os templates e prompts disponíveis no Hub
+
+## Recursos
+
+- [App Factory Hub](https://appfactoryhub.vercel.app)
+- [Documentação do Playbook](https://github.com/cunhamarcela/app-factory-template)
+`
+
+  const getAppSpecContent = (data: typeof formData) => `# ${data.name} - Especificação
+
+## Visão Geral
+
+${data.description || 'Descrição do projeto a ser preenchida.'}
+
+## Stack Tecnológica
+
+- **Backend**: ${data.stack === 'firebase' ? 'Firebase' : 'Supabase'}
+- **Frontend**: Flutter
+- **Autenticação**: Apple/Google/Email
+- **Analytics**: Firebase Analytics
+- **Monetização**: AdMob
+
+## Nicho
+
+${data.niche || 'A ser definido'}
+
+## Funcionalidades Core
+
+- [ ] Autenticação
+- [ ] Tela principal
+- [ ] Funcionalidade core 1
+- [ ] Funcionalidade core 2
+- [ ] Sistema de notificações
+
+## Roadmap
+
+### Sprint 0
+- Setup inicial e configurações
+- Implementação da autenticação
+- Analytics básicos
+
+### Sprint 1
+- Desenvolvimento das telas core
+- Integração com backend
+- Implementação de anúncios
+
+### Sprint 2
+- Polimento e UX
+- Preparação para lançamento
+- QA completo
+`
+
+  const getReadmeContent = (data: typeof formData) => `# ${data.name}
+
+${data.description || 'Projeto criado com App Factory Hub'}
+
+## Stack
+
+- **${data.stack === 'firebase' ? 'Firebase' : 'Supabase'}**
+- Flutter
+- ${data.niche ? `Nicho: ${data.niche}` : ''}
+
+## Desenvolvimento
+
+Este projeto segue o App Factory Playbook. Consulte os arquivos AGENTS.md e APP_SPEC_TEMPLATE.md para mais detalhes.
+
+## Setup
+
+1. Clone o repositório
+2. Configure as variáveis de ambiente
+3. Execute \`flutter pub get\`
+4. Siga as instruções no AGENTS.md
+
+---
+
+Criado com ❤️ usando [App Factory Hub](https://appfactoryhub.vercel.app)
+`
 
   const stacks = [
     { value: "firebase", label: "Firebase", description: "Next.js + Firebase + Vercel" },

@@ -1,75 +1,97 @@
-import { auth } from "@/lib/auth"
+"use client"
+
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Rocket, Code, Search, Filter } from "lucide-react"
+import { Plus, Rocket, Code, Search, Filter, RefreshCw, Github } from "lucide-react"
 import Link from "next/link"
 
-export default async function ProjectsPage() {
-  const session = await auth()
+interface Project {
+  id: string
+  name: string
+  slug: string
+  description: string
+  githubRepo: string
+  stack: string
+  status: string
+  progress: number
+  lastPush: string
+  stars: number
+  language: string
+  isPrivate: boolean
+  homepage?: string
+}
+
+export default function ProjectsPage() {
+  const { data: session, status } = useSession()
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
+
+  if (status === "loading") {
+    return <div>Loading...</div>
+  }
 
   if (!session) {
     redirect("/api/auth/signin")
   }
 
-  // Mock data - will be replaced with real data from database
-  const projects = [
-    {
-      id: "1",
-      name: "E-commerce Platform",
-      slug: "ecommerce-platform",
-      description: "Plataforma completa de e-commerce com Next.js",
-      stack: "Next.js + Supabase",
-      status: "Development",
-      progress: 65,
-      lastUpdate: "2 horas atrás",
-      repoUrl: "https://github.com/user/ecommerce-platform"
-    },
-    {
-      id: "2", 
-      name: "Task Manager",
-      slug: "task-manager",
-      description: "Sistema de gerenciamento de tarefas e projetos",
-      stack: "React + Firebase",
-      status: "Deployed",
-      progress: 100,
-      lastUpdate: "1 dia atrás",
-      repoUrl: "https://github.com/user/task-manager"
-    },
-    {
-      id: "3",
-      name: "Finance Tracker",
-      slug: "finance-tracker", 
-      description: "Aplicativo de controle financeiro pessoal",
-      stack: "Flutter + Supabase",
-      status: "Planning",
-      progress: 15,
-      lastUpdate: "3 dias atrás",
-      repoUrl: null
-    },
-    {
-      id: "4",
-      name: "Social Media Dashboard",
-      slug: "social-dashboard",
-      description: "Dashboard para gerenciar múltiplas redes sociais",
-      stack: "Vue.js + Firebase",
-      status: "Development", 
-      progress: 40,
-      lastUpdate: "5 horas atrás",
-      repoUrl: "https://github.com/user/social-dashboard"
+  useEffect(() => {
+    fetchProjects()
+  }, [])
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const response = await fetch('/api/projects')
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch projects')
+      }
+      
+      const data = await response.json()
+      setProjects(data.projects || [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load projects')
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
+
+  const filteredProjects = projects.filter(project =>
+    project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    project.description.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Deployed":
+    switch (status.toLowerCase()) {
+      case "deployed":
         return "gradient-success text-white border-0"
-      case "Development":
+      case "development":
         return "gradient-secondary text-white border-0"
-      case "Planning":
+      case "planning":
         return "bg-gray-100 text-gray-700 border-0"
       default:
         return "bg-gray-100 text-gray-700 border-0"
+    }
+  }
+
+  const getStatusLabel = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "deployed":
+        return "Deployed"
+      case "development":
+        return "Development"
+      case "planning":
+        return "Planning"
+      default:
+        return "Unknown"
     }
   }
 
@@ -109,24 +131,57 @@ export default async function ProjectsPage() {
                 <input
                   type="text"
                   placeholder="Buscar projetos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   style={{ borderColor: 'var(--border)', background: 'var(--background)' }}
                 />
               </div>
-              <Button variant="outline" className="rounded-xl">
-                <Filter className="w-4 h-4 mr-2" />
-                Filtros
+              <Button 
+                variant="outline" 
+                className="rounded-xl"
+                onClick={fetchProjects}
+                disabled={loading}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Atualizar
               </Button>
             </div>
             <div className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
-              {projects.length} projetos encontrados
+              {filteredProjects.length} projetos encontrados
             </div>
           </div>
         </div>
 
+        {/* Error State */}
+        {error && (
+          <div className="modern-card p-6 mb-8 border-red-200 bg-red-50">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-red-100 rounded-xl">
+                <Github className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-red-800">Erro ao carregar projetos</h3>
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="modern-card p-12 text-center">
+            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: 'var(--foreground-secondary)' }} />
+            <p style={{ color: 'var(--foreground-secondary)' }}>
+              Carregando projetos do GitHub...
+            </p>
+          </div>
+        )}
+
         {/* Projects Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {projects.map((project) => (
+        {!loading && !error && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {filteredProjects.map((project) => (
             <div key={project.id} className="modern-card p-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-20 h-20 gradient-primary opacity-5 rounded-full -mr-10 -mt-10"></div>
               
@@ -136,18 +191,37 @@ export default async function ProjectsPage() {
                   <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center">
                     <Rocket className="w-6 h-6 text-white" />
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
-                      {project.name}
-                    </h3>
-                    <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
-                      {project.stack}
-                    </p>
+                    <div>
+                      <h3 className="text-xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
+                        {project.name}
+                      </h3>
+                      <div className="flex items-center space-x-2 text-sm" style={{ color: 'var(--foreground-secondary)' }}>
+                        <span>{project.stack}</span>
+                        {project.language && (
+                          <>
+                            <span>•</span>
+                            <span>{project.language}</span>
+                          </>
+                        )}
+                        {project.stars > 0 && (
+                          <>
+                            <span>•</span>
+                            <span>⭐ {project.stars}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <Badge className={`px-3 py-1 ${getStatusColor(project.status)}`}>
-                  {project.status}
-                </Badge>
+                  <div className="flex items-center space-x-2">
+                    <Badge className={`px-3 py-1 ${getStatusColor(project.status)}`}>
+                      {getStatusLabel(project.status)}
+                    </Badge>
+                    {project.isPrivate && (
+                      <Badge className="bg-gray-100 text-gray-700 border-0 text-xs">
+                        Private
+                      </Badge>
+                    )}
+                  </div>
               </div>
 
               {/* Project Description */}
@@ -176,14 +250,24 @@ export default async function ProjectsPage() {
               {/* Project Footer */}
               <div className="flex items-center justify-between">
                 <div className="text-xs" style={{ color: 'var(--foreground-secondary)' }}>
-                  Atualizado {project.lastUpdate}
+                  {project.lastPush ? `Último push: ${new Date(project.lastPush).toLocaleDateString('pt-BR')}` : 'Sem atividade recente'}
                 </div>
                 <div className="flex items-center space-x-2">
-                  {project.repoUrl && (
-                    <Button variant="outline" size="sm" className="rounded-xl">
-                      <Code className="w-4 h-4 mr-1" />
-                      Repo
-                    </Button>
+                  {project.githubRepo && (
+                    <a href={project.githubRepo} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" size="sm" className="rounded-xl">
+                        <Github className="w-4 h-4 mr-1" />
+                        Repo
+                      </Button>
+                    </a>
+                  )}
+                  {project.homepage && (
+                    <a href={project.homepage} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" size="sm" className="rounded-xl">
+                        <Code className="w-4 h-4 mr-1" />
+                        Demo
+                      </Button>
+                    </a>
                   )}
                   <Link href={`/projects/${project.slug}`}>
                     <Button variant="outline" size="sm" className="rounded-xl">
@@ -193,20 +277,24 @@ export default async function ProjectsPage() {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Empty State (if no projects) */}
-        {projects.length === 0 && (
+        {!loading && !error && filteredProjects.length === 0 && (
           <div className="modern-card p-12 text-center">
             <div className="w-16 h-16 gradient-primary rounded-xl flex items-center justify-center mx-auto mb-4">
               <Rocket className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
-              Nenhum projeto encontrado
+              {searchTerm ? 'Nenhum projeto encontrado' : 'Nenhum repositório encontrado'}
             </h3>
             <p className="mb-6" style={{ color: 'var(--foreground-secondary)' }}>
-              Comece criando seu primeiro projeto
+              {searchTerm 
+                ? 'Tente ajustar os termos de busca' 
+                : 'Conecte sua conta do GitHub ou crie seu primeiro projeto'
+              }
             </p>
             <Link href="/projects/new">
               <Button className="gradient-primary text-white px-6 py-3 rounded-xl">

@@ -1,0 +1,11 @@
+{
+  "type":"GROWTH_LAUNCH",
+  "title":"Growth & Launch",
+  "items":[
+    {"id":"aso","label":"ASO: ícone + screenshots (2 variações)","done":false},
+    {"id":"desc","label":"Descrição focada em benefícios + 3 keywords","done":false},
+    {"id":"policy","label":"Política de privacidade publicada","done":false},
+    {"id":"ads_campaigns","label":"2 vídeos + 2 estáticos; campanhas ativas","done":false},
+    {"id":"metrics","label":"Monitorar CPI, IPM, D1, ARPDAU, eCPM, Fill","done":false}
+  ]
+}

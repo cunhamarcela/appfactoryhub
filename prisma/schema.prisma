@@ -59,18 +59,22 @@ model VerificationToken {
 }
 
 model Project {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?
-  githubRepo  String?
-  stack       String   @default("firebase") // firebase | supabase
-  status      String   @default("planning") // planning | development | deployed | archived
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tasks       Task[]
+  id           String    @id @default(cuid())
+  name         String
+  slug         String    @unique
+  niche        String?
+  description  String?
+  repoUrl      String?
+  repoFullName String?
+  githubRepo   String?   // Keep for backward compatibility
+  stack        String    @default("firebase") // firebase | supabase
+  status       String    @default("planning") // planning | development | deployed | archived
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks        Task[]
+  checklists   Checklist[]
   financeRecords FinanceRecord[]
 }
 
@@ -91,16 +95,31 @@ model Task {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Checklist {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type       String   // "QA_RELEASE" | "GROWTH_LAUNCH" | "UX_RETENTION"
+  title      String
+  items      Json     // [{id, label, done}]
+  progress   Int      @default(0) // 0..100
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 model FinanceRecord {
   id          String   @id @default(cuid())
-  type        String   // fixed_cost | infrastructure | per_user | per_project
-  category    String   // cursor | chatgpt | vercel | firebase | supabase | other
-  amount      Float
-  currency    String   @default("USD")
-  description String?
-  date        DateTime @default(now())
   projectId   String?
-  userId      String
   project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    String   // infra | tool | subscription | user_cost
+  provider    String   // firebase | supabase | cursor | chatgpt | vercel | other
+  description String
+  amount      Float
+  currency    String   @default("BRL")
+  recurring   Boolean  @default(false)
+  period      String?  // monthly | yearly | one-time
+  userIdExternal String? // opcional: custo por usuário (id externo)
+  createdAt   DateTime @default(now())
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }

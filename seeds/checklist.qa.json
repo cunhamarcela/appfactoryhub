@@ -1,0 +1,11 @@
+{
+  "type":"QA_RELEASE",
+  "title":"QA & Release Checklist",
+  "items":[
+    {"id":"auth","label":"Auth: login/logout/reset + deep links ok","done":false},
+    {"id":"ads","label":"Ads: interstitial cap + rewarded entrega recompensa","done":false},
+    {"id":"analytics","label":"Analytics: eventos mínimos disparam","done":false},
+    {"id":"lgpd","label":"LGPD: consentimento salvo e respeitado","done":false},
+    {"id":"build","label":"Build/TestFlight sem crashes no fluxo principal","done":false}
+  ]
+}

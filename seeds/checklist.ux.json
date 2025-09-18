@@ -1,0 +1,11 @@
+{
+  "type":"UX_RETENTION",
+  "title":"UX & Retention",
+  "items":[
+    {"id":"onboarding","label":"Onboarding ≤3 telas com promessa clara","done":false},
+    {"id":"empty","label":"Empty states com CTA de ação","done":false},
+    {"id":"feedback","label":"Feedback instantâneo pós-ação","done":false},
+    {"id":"loop","label":"Loop diário (estreak leve)","done":false},
+    {"id":"perf","label":"TTI < 2s, offline básico","done":false}
+  ]
+}

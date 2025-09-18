@@ -1,0 +1,9 @@
+[
+  {"title":"Criar repo do template e copiar App Factory","sprint":"Sprint 0"},
+  {"title":"Preencher APP_SPEC_TEMPLATE.md","sprint":"Sprint 0"},
+  {"title":"Definir BACKEND_CONTRACT.yaml","sprint":"Sprint 0"},
+  {"title":"Scaffolding Flutter (MVVM + Riverpod)","sprint":"Sprint 0"},
+  {"title":"Configurar Auth (Apple/Google/Email)","sprint":"Sprint 0"},
+  {"title":"Instrumentar Analytics mínimos","sprint":"Sprint 0"},
+  {"title":"Implementar AdService (banner/interstitial/rewarded)","sprint":"Sprint 0"}
+]
