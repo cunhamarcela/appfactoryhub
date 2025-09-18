@@ -56,8 +56,7 @@ const nextConfig: NextConfig = {
   // Configurações adicionais de segurança
   poweredByHeader: false,
   compress: true,
-  reactStrictMode: true,
-  swcMinify: true
+  reactStrictMode: true
 };
 
 export default nextConfig;

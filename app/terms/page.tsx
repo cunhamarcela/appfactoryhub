@@ -69,7 +69,7 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4">6. Limitação de Responsabilidade</h2>
           <p className="mb-4">
-            O App Factory Hub é fornecido "como está" sem garantias. Não nos responsabilizamos 
+            O App Factory Hub é fornecido &ldquo;como está&rdquo; sem garantias. Não nos responsabilizamos 
             por danos diretos, indiretos ou consequenciais decorrentes do uso da plataforma.
           </p>
         </section>
