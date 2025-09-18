@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     console.error("Error creating repository:", error)
     
     // Handle specific GitHub API errors
-    if (error.message.includes("422")) {
+    if (error instanceof Error && error.message.includes("422")) {
       return NextResponse.json(
         { error: "Repository name already exists or is invalid" }, 
         { status: 422 }

@@ -199,7 +199,7 @@ Use arquitetura MVVM + Riverpod. Foque em UX fluida e tratamento de erros robust
     let suggestions
     try {
       suggestions = JSON.parse(responseText)
-    } catch (err) {
+    } catch {
       console.error("Failed to parse OpenAI response:", responseText)
       throw new Error("Invalid JSON response from AI")
     }

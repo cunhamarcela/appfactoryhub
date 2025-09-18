@@ -100,11 +100,13 @@ export async function GET(req: NextRequest) {
 
     // Categorize events
     const upcomingEvents = transformedEvents.filter(event => {
+      if (!event.start) return false
       const eventStart = new Date(event.start)
       return eventStart > now
     })
 
     const todayEvents = transformedEvents.filter(event => {
+      if (!event.start) return false
       const eventStart = new Date(event.start)
       const today = new Date()
       return eventStart.toDateString() === today.toDateString()
@@ -113,7 +115,9 @@ export async function GET(req: NextRequest) {
     // Calculate some stats
     const totalEvents = transformedEvents.length
     const busyDays = new Set(
-      transformedEvents.map(event => new Date(event.start).toDateString())
+      transformedEvents
+        .filter(event => event.start)
+        .map(event => new Date(event.start!).toDateString())
     ).size
 
     return NextResponse.json({
@@ -133,18 +137,20 @@ export async function GET(req: NextRequest) {
     console.error("Error fetching calendar events:", error)
     
     // Handle specific Google API errors
-    if (error.code === 401) {
-      return NextResponse.json(
-        { error: "Google Calendar access expired. Please reconnect." }, 
-        { status: 401 }
-      )
-    }
+    if (error && typeof error === 'object' && 'code' in error) {
+      if (error.code === 401) {
+        return NextResponse.json(
+          { error: "Google Calendar access expired. Please reconnect." }, 
+          { status: 401 }
+        )
+      }
 
-    if (error.code === 403) {
-      return NextResponse.json(
-        { error: "Google Calendar access denied. Check permissions." }, 
-        { status: 403 }
-      )
+      if (error.code === 403) {
+        return NextResponse.json(
+          { error: "Google Calendar access denied. Check permissions." }, 
+          { status: 403 }
+        )
+      }
     }
 
     return NextResponse.json(

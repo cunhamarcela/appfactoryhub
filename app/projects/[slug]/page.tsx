@@ -23,8 +23,8 @@ interface ProjectPageProps {
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const session = await auth()
-
-  if (!session) {
+  
+  if (!session?.user?.id) {
     redirect("/api/auth/signin")
   }
 
@@ -195,7 +195,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <div className="mt-6 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
                   <div className="flex items-center space-x-4">
                     <a 
-                      href={project.repoUrl || project.githubRepo} 
+                      href={project.repoUrl || project.githubRepo || '#'} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="flex-1"

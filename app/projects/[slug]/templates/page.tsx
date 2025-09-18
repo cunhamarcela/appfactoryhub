@@ -87,7 +87,7 @@ export default function TemplatesPage({ params }: TemplatesPageProps) {
   const generateTemplates = (project: Project): Template[] => {
     const stack = project.stack
     const projectName = project.name
-    const niche = project.niche || 'A ser definido'
+    const niche = 'A ser definido' // Default value since niche is not in Project interface
 
     return [
       // Playbook Templates

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await auth()
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { slug } = params
+    const { slug } = await params
 
     // Find the project
     const project = await prisma.project.findFirst({
@@ -51,7 +51,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await auth()
@@ -60,7 +60,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { slug } = params
+    const { slug } = await params
     const body = await req.json()
     const { 
       category, 
@@ -117,7 +117,7 @@ export async function POST(
         recurring,
         period,
         userIdExternal,
-        ownerId: session.user.id
+        ownerId: session.user.id!
       }
     })
 

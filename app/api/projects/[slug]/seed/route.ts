@@ -10,16 +10,16 @@ import ux from "@/seeds/checklist.ux.json"
 
 export async function POST(
   req: NextRequest, 
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await auth()
     
-    if (!session?.user?.email) {
+    if (!session?.user?.email || !session.user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { slug } = params
+    const { slug } = await params
 
     // Find the project
     const project = await prisma.project.findFirst({
@@ -54,12 +54,13 @@ export async function POST(
 
     // Create tasks from seeds
     const allTasks = [...s0, ...s1, ...s2]
+    const userId = session.user.id
     const tasksData = allTasks.map(task => ({
       title: task.title,
       sprint: task.sprint.toLowerCase().replace(' ', ''), // "Sprint 0" -> "sprint0"
       status: "todo",
       projectId: project.id,
-      userId: session.user.id
+      userId
     }))
 
     await prisma.task.createMany({

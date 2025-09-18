@@ -34,7 +34,7 @@ export async function GET() {
       where: { userId: session.user.id }
     })
 
-    // Define interface for GitHub repo
+    // Define interfaces
     interface GitHubRepo {
       id: number
       name: string
@@ -52,8 +52,26 @@ export async function GET() {
       fork: boolean
     }
 
+    interface ProjectData {
+      id: string
+      name: string
+      slug: string
+      description: string
+      githubRepo: string
+      stack: string
+      status: string
+      createdAt: string
+      updatedAt: string
+      lastPush: string
+      stars: number
+      language: string | null
+      isPrivate: boolean
+      homepage: string | null
+      progress: number
+    }
+
     // Transform GitHub repos into project format
-    const projects = repos.map((repo: GitHubRepo) => {
+    const projects: ProjectData[] = repos.map((repo: GitHubRepo) => {
       const existingProject = existingProjects.find(p => p.githubRepo === repo.html_url)
       
       // Determine stack based on repo topics or description
@@ -98,7 +116,7 @@ export async function GET() {
     })
 
     // Filter out forks and focus on original repos
-    const originalProjects = projects.filter(project => 
+    const originalProjects = projects.filter((project: ProjectData) => 
       !repos.find((r: GitHubRepo) => r.name === project.name)?.fork
     )
 

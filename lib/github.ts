@@ -116,7 +116,11 @@ export class GitHubClient {
         const result = await this.writeFile(repo, file.path, file.content, file.message)
         results.push({ path: file.path, ok: true, result })
       } catch (error) {
-        results.push({ path: file.path, ok: false, error: error.message })
+        results.push({ 
+          path: file.path, 
+          ok: false, 
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
       }
     }
     
