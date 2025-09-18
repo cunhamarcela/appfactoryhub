@@ -1,7 +1,7 @@
 import { google } from 'googleapis'
 
 export class CalendarClient {
-  private auth: any
+  private auth: InstanceType<typeof google.auth.OAuth2>
 
   constructor(accessToken: string) {
     this.auth = new google.auth.OAuth2()

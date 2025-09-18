@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
@@ -72,10 +73,12 @@ export function Navigation() {
           <div className="flex-shrink-0 flex border-t border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center w-full">
               <div className="flex-shrink-0">
-                <img
+                <Image
                   className="h-8 w-8 rounded-full"
                   src={session?.user?.image || "/default-avatar.png"}
                   alt={session?.user?.name || "User"}
+                  width={32}
+                  height={32}
                 />
               </div>
               <div className="ml-3 flex-1">
@@ -151,10 +154,12 @@ export function Navigation() {
             <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center px-4">
                 <div className="flex-shrink-0">
-                  <img
+                  <Image
                     className="h-10 w-10 rounded-full"
                     src={session?.user?.image || "/default-avatar.png"}
                     alt={session?.user?.name || "User"}
+                    width={40}
+                    height={40}
                   />
                 </div>
                 <div className="ml-3">
