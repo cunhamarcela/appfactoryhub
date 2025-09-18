@@ -40,7 +40,8 @@ export default function ProjectsPage() {
       const response = await fetch('/api/projects')
       
       if (!response.ok) {
-        throw new Error('Failed to fetch projects')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to fetch projects`)
       }
       
       const data = await response.json()
@@ -157,14 +158,37 @@ export default function ProjectsPage() {
         {/* Error State */}
         {error && (
           <div className="modern-card p-6 mb-8 border-red-200 bg-red-50">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-red-100 rounded-xl">
-                <Github className="w-5 h-5 text-red-600" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-red-100 rounded-xl">
+                  <Github className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-red-800">Erro ao carregar projetos</h3>
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-red-800">Erro ao carregar projetos</h3>
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
+              {error.includes("GitHub") && (
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="outline" 
+                    className="rounded-xl border-red-300 text-red-700 hover:bg-red-50"
+                    onClick={() => window.location.href = '/api/auth/signin'}
+                  >
+                    <Github className="w-4 h-4 mr-2" />
+                    Conectar GitHub
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="rounded-xl"
+                    onClick={fetchProjects}
+                    disabled={loading}
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    Tentar Novamente
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}

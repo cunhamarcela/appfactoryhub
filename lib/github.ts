@@ -78,8 +78,12 @@ export class GitHubClient {
   }
 
   async getUserRepositories(username?: string) {
-    const user = username || this.owner
-    const response = await fetch(`https://api.github.com/users/${user}/repos?sort=updated&per_page=100`, {
+    // If no username provided, get authenticated user's repos
+    const endpoint = username 
+      ? `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`
+      : `https://api.github.com/user/repos?sort=updated&per_page=100&affiliation=owner`
+    
+    const response = await fetch(endpoint, {
       headers: {
         'Authorization': `Bearer ${this.token}`,
         'Accept': 'application/vnd.github.v3+json',
@@ -87,7 +91,8 @@ export class GitHubClient {
     })
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch repositories: ${response.statusText}`)
+      const errorText = await response.text()
+      throw new Error(`Failed to fetch repositories: ${response.status} ${response.statusText} - ${errorText}`)
     }
 
     return response.json()

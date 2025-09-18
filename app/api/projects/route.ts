@@ -26,7 +26,7 @@ export async function GET() {
     // Initialize GitHub client with user's token
     const github = new GitHubClient(account.access_token)
     
-    // Get user's repositories from GitHub
+    // Get user's repositories from GitHub (authenticated user's repos)
     const repos = await github.getUserRepositories()
     
     // Get existing projects from database
@@ -132,9 +132,33 @@ export async function GET() {
 
   } catch (error) {
     console.error("Error fetching projects:", error)
+    
+    // Provide more specific error messages
+    let errorMessage = "Failed to fetch projects"
+    let statusCode = 500
+    
+    if (error instanceof Error) {
+      if (error.message.includes("GitHub not connected")) {
+        errorMessage = "GitHub account not connected. Please connect your GitHub account in settings."
+        statusCode = 400
+      } else if (error.message.includes("Unauthorized") || error.message.includes("401")) {
+        errorMessage = "GitHub authorization expired. Please reconnect your GitHub account."
+        statusCode = 401
+      } else if (error.message.includes("403")) {
+        errorMessage = "GitHub API rate limit exceeded. Please try again later."
+        statusCode = 429
+      } else if (error.message.includes("Failed to fetch repositories")) {
+        errorMessage = `GitHub API error: ${error.message}`
+        statusCode = 502
+      }
+    }
+    
     return NextResponse.json(
-      { error: "Failed to fetch projects" }, 
-      { status: 500 }
+      { 
+        error: errorMessage,
+        details: error instanceof Error ? error.message : "Unknown error"
+      }, 
+      { status: statusCode }
     )
   }
 }
