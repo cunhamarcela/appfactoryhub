@@ -1,6 +1,5 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar, Clock, Plus } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -77,60 +76,63 @@ export function CalendarWidget() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
-          Próximos Eventos
-        </CardTitle>
-        <CardDescription>
-          Seus compromissos agendados
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {events.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Nenhum evento próximo
-              </p>
-            ) : (
-              events.map((event) => (
-                <div key={event.id} className="flex items-start space-x-3 p-3 border rounded-lg">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {event.summary}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                      <Clock className="h-3 w-3" />
-                      {event.start.dateTime && (
-                        <>
-                          {formatDate(event.start.dateTime)} às {formatTime(event.start.dateTime)}
-                        </>
-                      )}
-                    </div>
+    <div className="modern-card p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 gradient-info rounded-xl">
+          <Calendar className="h-5 w-5 text-white" />
+        </div>
+        <div>
+          <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
+            Próximos Eventos
+          </h3>
+          <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
+            Seus compromissos agendados
+          </p>
+        </div>
+      </div>
+      
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="animate-pulse">
+              <div className="h-4 bg-gray-200 rounded-lg w-3/4 mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded-lg w-1/2"></div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {events.length === 0 ? (
+            <p className="text-sm text-center py-6" style={{ color: 'var(--foreground-secondary)' }}>
+              Nenhum evento próximo
+            </p>
+          ) : (
+            events.map((event) => (
+              <div key={event.id} className="flex items-start space-x-4 p-4 border rounded-xl hover:shadow-sm transition-all duration-300" style={{ borderColor: 'var(--border)' }}>
+                <div className="w-3 h-3 gradient-info rounded-full mt-1.5"></div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate mb-1" style={{ color: 'var(--foreground)' }}>
+                    {event.summary}
+                  </p>
+                  <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--foreground-secondary)' }}>
+                    <Clock className="h-3 w-3" />
+                    {event.start.dateTime && (
+                      <>
+                        {formatDate(event.start.dateTime)} às {formatTime(event.start.dateTime)}
+                      </>
+                    )}
                   </div>
                 </div>
-              ))
-            )}
-            
-            <Button variant="outline" size="sm" className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
-              Agendar Bloco
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              </div>
+            ))
+          )}
+          
+          <Button variant="outline" size="sm" className="w-full rounded-xl mt-4 border-dashed">
+            <Plus className="h-4 w-4 mr-2" />
+            Agendar Bloco
+          </Button>
+        </div>
+      )}
+    </div>
   )
 }

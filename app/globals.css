@@ -1,8 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Design System Colors - Based on Reference */
+  --primary-gradient-start: #6366f1; /* Indigo */
+  --primary-gradient-end: #4f46e5; /* Deep Indigo */
+  --secondary-gradient-start: #f59e0b; /* Amber */
+  --secondary-gradient-end: #d97706; /* Orange */
+  --accent-gradient-start: #ec4899; /* Pink */
+  --accent-gradient-end: #be185d; /* Deep Pink */
+  --success-gradient-start: #10b981; /* Emerald */
+  --success-gradient-end: #059669; /* Deep Emerald */
+  --info-gradient-start: #06b6d4; /* Cyan */
+  --info-gradient-end: #0891b2; /* Deep Cyan */
+  
+  /* Neutral Colors */
+  --background: #f8fafc; /* Light Gray */
+  --background-secondary: #f1f5f9; /* Lighter Gray */
+  --foreground: #1e293b; /* Dark Slate */
+  --foreground-secondary: #475569; /* Medium Slate */
+  --border: #e2e8f0; /* Light Border */
+  --card-background: #ffffff;
+  --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  
+  /* Sidebar Colors */
+  --sidebar-background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  --sidebar-text: #ffffff;
+  --sidebar-text-secondary: #c7d2fe;
+  --sidebar-hover: rgba(255, 255, 255, 0.1);
+  --sidebar-active: rgba(255, 255, 255, 0.2);
 }
 
 @theme inline {
@@ -14,13 +39,80 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0f172a;
+    --background-secondary: #1e293b;
+    --foreground: #f8fafc;
+    --foreground-secondary: #cbd5e1;
+    --border: #334155;
+    --card-background: #1e293b;
+    --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+/* Custom Gradient Classes */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, var(--secondary-gradient-start) 0%, var(--secondary-gradient-end) 100%);
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, var(--accent-gradient-start) 0%, var(--accent-gradient-end) 100%);
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, var(--success-gradient-start) 0%, var(--success-gradient-end) 100%);
+}
+
+.gradient-info {
+  background: linear-gradient(135deg, var(--info-gradient-start) 0%, var(--info-gradient-end) 100%);
+}
+
+/* Card Styles */
+.modern-card {
+  background: var(--card-background);
+  border-radius: 16px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.modern-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Glassmorphism Effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground-secondary);
 }

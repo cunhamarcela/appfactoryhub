@@ -1,6 +1,5 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { DollarSign, TrendingUp, TrendingDown, Plus } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -35,24 +34,26 @@ export function FinanceCards() {
 
   if (loading || !financeData) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            Resumo Financeiro
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-              </div>
-            ))}
+      <div className="modern-card p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 gradient-accent rounded-xl">
+            <DollarSign className="h-5 w-5 text-white" />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
+              Resumo Financeiro
+            </h3>
+          </div>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="animate-pulse">
+              <div className="h-4 bg-gray-200 rounded-lg w-3/4 mb-2"></div>
+              <div className="h-6 bg-gray-200 rounded-lg w-1/2"></div>
+            </div>
+          ))}
+        </div>
+      </div>
     )
   }
 
@@ -61,58 +62,61 @@ export function FinanceCards() {
   const isIncrease = monthlyChange > 0
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <DollarSign className="h-5 w-5" />
-          Resumo Financeiro
-        </CardTitle>
-        <CardDescription>
-          Custos do mês atual
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Total Monthly Cost */}
-          <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-              ${financeData.totalThisMonth}
-            </div>
-            <div className={`flex items-center justify-center gap-1 text-sm ${
-              isIncrease ? 'text-red-600' : 'text-green-600'
-            }`}>
-              {isIncrease ? (
-                <TrendingUp className="h-4 w-4" />
-              ) : (
-                <TrendingDown className="h-4 w-4" />
-              )}
-              {isIncrease ? '+' : ''}{changePercentage}% vs mês anterior
-            </div>
-          </div>
-
-          {/* Cost Breakdown */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Custos Fixos</span>
-              <span className="font-medium">${financeData.fixedCosts}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Infraestrutura</span>
-              <span className="font-medium">${financeData.infrastructure}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Por Usuário</span>
-              <span className="font-medium">${financeData.perUser}</span>
-            </div>
-          </div>
-
-          {/* Action Button */}
-          <Button variant="outline" size="sm" className="w-full">
-            <Plus className="h-4 w-4 mr-2" />
-            Adicionar Custo
-          </Button>
+    <div className="modern-card p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 gradient-accent rounded-xl">
+          <DollarSign className="h-5 w-5 text-white" />
         </div>
-      </CardContent>
-    </Card>
+        <div>
+          <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
+            Resumo Financeiro
+          </h3>
+          <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
+            Custos do mês atual
+          </p>
+        </div>
+      </div>
+      
+      <div className="space-y-6">
+        {/* Total Monthly Cost */}
+        <div className="text-center p-6 gradient-accent rounded-xl text-white">
+          <div className="text-3xl font-bold mb-2">
+            ${financeData.totalThisMonth}
+          </div>
+          <div className={`flex items-center justify-center gap-2 text-sm ${
+            isIncrease ? 'text-white/90' : 'text-white/90'
+          }`}>
+            {isIncrease ? (
+              <TrendingUp className="h-4 w-4" />
+            ) : (
+              <TrendingDown className="h-4 w-4" />
+            )}
+            {isIncrease ? '+' : ''}{changePercentage}% vs mês anterior
+          </div>
+        </div>
+
+        {/* Cost Breakdown */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center p-3 border rounded-xl" style={{ borderColor: 'var(--border)' }}>
+            <span className="text-sm font-medium" style={{ color: 'var(--foreground-secondary)' }}>Custos Fixos</span>
+            <span className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>${financeData.fixedCosts}</span>
+          </div>
+          <div className="flex justify-between items-center p-3 border rounded-xl" style={{ borderColor: 'var(--border)' }}>
+            <span className="text-sm font-medium" style={{ color: 'var(--foreground-secondary)' }}>Infraestrutura</span>
+            <span className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>${financeData.infrastructure}</span>
+          </div>
+          <div className="flex justify-between items-center p-3 border rounded-xl" style={{ borderColor: 'var(--border)' }}>
+            <span className="text-sm font-medium" style={{ color: 'var(--foreground-secondary)' }}>Por Usuário</span>
+            <span className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>${financeData.perUser}</span>
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <Button variant="outline" size="sm" className="w-full rounded-xl border-dashed">
+          <Plus className="h-4 w-4 mr-2" />
+          Adicionar Custo
+        </Button>
+      </div>
+    </div>
   )
 }
