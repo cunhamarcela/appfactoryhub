@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
               "media-src 'self'",
               "object-src 'none'",
               "base-uri 'self'",
-              "form-action 'self'",
+              "form-action 'self' https://github.com",
               "frame-ancestors 'none'",
               "upgrade-insecure-requests"
             ].join('; ')
