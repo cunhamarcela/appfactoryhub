@@ -14,8 +14,8 @@ export async function GET() {
     }
 
     // Check if user exists in database
-    const user = await prisma.user.findUnique({
-      where: { email: session.user?.email! },
+    const user = session.user?.email ? await prisma.user.findUnique({
+      where: { email: session.user.email },
       include: {
         accounts: {
           select: {
@@ -25,15 +25,15 @@ export async function GET() {
           }
         }
       }
-    })
+    }) : null
 
     // Check GitHub account specifically
-    const githubAccount = await prisma.account.findFirst({
+    const githubAccount = session.user?.id ? await prisma.account.findFirst({
       where: {
-        userId: session.user?.id,
+        userId: session.user.id,
         provider: "github"
       }
-    })
+    }) : null
 
     return NextResponse.json({
       authenticated: true,
