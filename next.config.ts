@@ -31,16 +31,16 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://fonts.googleapis.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://fonts.googleapis.com https://accounts.google.com/gsi/client",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://api.openai.com https://api.github.com https://googleapis.com https://vercel.live wss://ws-us3.pusher.com",
-              "frame-src 'self' https://vercel.live",
+              "connect-src 'self' https://api.openai.com https://api.github.com https://googleapis.com https://oauth2.googleapis.com https://accounts.google.com https://vercel.live wss://ws-us3.pusher.com",
+              "frame-src 'self' https://vercel.live https://accounts.google.com https://github.com",
               "media-src 'self'",
               "object-src 'none'",
               "base-uri 'self'",
-              "form-action 'self' https://github.com",
+              "form-action 'self' https://github.com https://accounts.google.com https://oauth2.googleapis.com",
               "frame-ancestors 'none'",
               "upgrade-insecure-requests"
             ].join('; ')
