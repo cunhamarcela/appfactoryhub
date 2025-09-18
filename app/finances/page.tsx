@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -37,19 +37,8 @@ export default function FinancesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  if (status === "loading") {
-    return <div>Loading...</div>
-  }
-
-  if (!session) {
-    redirect("/api/auth/signin")
-  }
-
-  useEffect(() => {
-    fetchFinancialData()
-  }, [])
-
-  const fetchFinancialData = async () => {
+  const fetchFinancialData = useCallback(async () => {
+    if (!session) return
     try {
       setLoading(true)
       setError(null)
@@ -67,6 +56,18 @@ export default function FinancesPage() {
     } finally {
       setLoading(false)
     }
+  }, [session])
+
+  useEffect(() => {
+    fetchFinancialData()
+  }, [fetchFinancialData])
+
+  if (status === "loading") {
+    return <div>Loading...</div>
+  }
+
+  if (!session) {
+    redirect("/api/auth/signin")
   }
 
   if (loading) {

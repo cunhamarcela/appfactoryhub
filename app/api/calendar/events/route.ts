@@ -45,8 +45,8 @@ export async function GET(req: NextRequest) {
 
     // Calculate date range
     const now = new Date()
-    let timeMin = new Date(now)
-    let timeMax = new Date(now)
+    const timeMin = new Date(now)
+    const timeMax = new Date(now)
 
     switch (range) {
       case 'day':

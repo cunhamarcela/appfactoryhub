@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth"
 import { GitHubClient } from "@/lib/github"
 import { prisma } from "@/lib/prisma"
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await auth()
     
@@ -34,8 +34,26 @@ export async function GET(req: NextRequest) {
       where: { userId: session.user.id }
     })
 
+    // Define interface for GitHub repo
+    interface GitHubRepo {
+      id: number
+      name: string
+      html_url: string
+      description: string | null
+      topics?: string[]
+      pushed_at: string
+      created_at: string
+      updated_at: string
+      stargazers_count: number
+      language: string | null
+      private: boolean
+      homepage: string | null
+      size: number
+      fork: boolean
+    }
+
     // Transform GitHub repos into project format
-    const projects = repos.map((repo: any) => {
+    const projects = repos.map((repo: GitHubRepo) => {
       const existingProject = existingProjects.find(p => p.githubRepo === repo.html_url)
       
       // Determine stack based on repo topics or description
@@ -80,12 +98,12 @@ export async function GET(req: NextRequest) {
     })
 
     // Filter out forks and focus on original repos
-    const originalProjects = projects.filter((project: any) => 
-      !repos.find((r: any) => r.name === project.name)?.fork
+    const originalProjects = projects.filter(project => 
+      !repos.find((r: GitHubRepo) => r.name === project.name)?.fork
     )
 
     // Sort by last activity
-    originalProjects.sort((a: any, b: any) => 
+    originalProjects.sort((a, b) => 
       new Date(b.lastPush || b.updatedAt).getTime() - new Date(a.lastPush || a.updatedAt).getTime()
     )
 
