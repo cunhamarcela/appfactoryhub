@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { GitHubClient } from "@/lib/github"
 import { prisma } from "@/lib/prisma"
+import { getToken } from "next-auth/jwt"
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const session = await auth()
     
@@ -11,20 +12,16 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get user's GitHub access token from the session
-    const account = await prisma.account.findFirst({
-      where: {
-        userId: session.user.id,
-        provider: "github"
-      }
-    })
-
-    if (!account?.access_token) {
+    // Get user's GitHub access token from the JWT token
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+    const accessToken = token?.accessToken as string
+    
+    if (!accessToken) {
       return NextResponse.json({ error: "GitHub not connected" }, { status: 400 })
     }
 
     // Initialize GitHub client with user's token
-    const github = new GitHubClient(account.access_token)
+    const github = new GitHubClient(accessToken)
     
     // Get user's repositories from GitHub (authenticated user's repos)
     const repos = await github.getUserRepositories()

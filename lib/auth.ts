@@ -27,14 +27,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    session: async ({ session, user }) => {
-      if (session?.user && user?.id) {
-        session.user.id = user.id
+    session: async ({ session, token }) => {
+      if (session?.user && token?.sub) {
+        session.user.id = token.sub
       }
       return session
     },
+    jwt: async ({ token, account, user }) => {
+      // Save the access_token and refresh_token on the token right after signin
+      if (account) {
+        token.accessToken = account.access_token
+        token.refreshToken = account.refresh_token
+        token.provider = account.provider
+      }
+      if (user) {
+        token.uid = user.id
+      }
+      return token
+    },
   },
   session: {
-    strategy: "database",
+    strategy: "jwt",
   },
 })
