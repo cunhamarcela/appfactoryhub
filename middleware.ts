@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
+  console.log('Middleware: Request URL - ', request.url);
+  console.log('Middleware: Request Headers - ', Array.from(request.headers.entries()));
   // Clone the request headers
   const requestHeaders = new Headers(request.headers)
   
@@ -22,9 +24,12 @@ export function middleware(request: NextRequest) {
   
   // Ensure HTTPS in production
   if (process.env.NODE_ENV === 'production' && !request.url.startsWith('https://')) {
-    return NextResponse.redirect(`https://${request.headers.get('host')}${request.nextUrl.pathname}`)
+    const redirectUrl = `https://${request.headers.get('host')}${request.nextUrl.pathname}`
+    console.log('Middleware: Production HTTP request, redirecting to HTTPS - ', redirectUrl);
+    return NextResponse.redirect(redirectUrl)
   }
 
+  console.log('Middleware: Returning response for URL - ', request.url);
   return response
 }
 

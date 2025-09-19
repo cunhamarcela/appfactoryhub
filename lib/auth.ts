@@ -3,9 +3,10 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import GitHubProvider from "next-auth/providers/github"
 import GoogleProvider from "next-auth/providers/google"
 import { prisma } from "./prisma"
+import type { Provider } from "next-auth/providers"
 
 // Build providers only if their env vars are present to avoid server errors
-const providers = [] as any[]
+const providers: Provider[] = []
 
 if (process.env.GITHUB_ID && process.env.GITHUB_SECRET) {
   providers.push(
@@ -42,31 +43,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   callbacks: {
     redirect: async ({ url, baseUrl }) => {
+      console.log('Auth Callback: Redirect - URL:', url, 'BaseURL:', baseUrl)
       try {
         const base = new URL(baseUrl)
         const next = new URL(url, baseUrl)
         // Only allow same-origin redirects
-        if (next.origin === base.origin) return next.toString()
+        if (next.origin === base.origin) {
+          console.log('Auth Callback: Redirect - Same origin, redirecting to:', next.toString())
+          return next.toString()
+        }
+        console.log('Auth Callback: Redirect - Different origin, redirecting to BaseURL:', baseUrl)
         return baseUrl
-      } catch {
+      } catch (error) {
+        console.error('Auth Callback: Redirect Error:', error)
         return baseUrl
       }
     },
     session: async ({ session, token }) => {
+      console.log('Auth Callback: Session - Session:', session, 'Token:', token)
       if (session?.user && token?.sub) {
         session.user.id = token.sub
       }
       return session
     },
     jwt: async ({ token, account, user }) => {
+      console.log('Auth Callback: JWT - Token:', token, 'Account:', account, 'User:', user)
       // Save the access_token and refresh_token on the token right after signin
       if (account) {
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
         token.provider = account.provider
+        console.log('Auth Callback: JWT - Account found, saving tokens.')
       }
       if (user) {
         token.uid = user.id
+        console.log('Auth Callback: JWT - User found, saving uid.')
       }
       return token
     },

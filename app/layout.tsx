@@ -41,7 +41,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log('RootLayout: Fetching session...');
   const session = await auth();
+  console.log('RootLayout: Session fetched - ', session ? 'User logged in' : 'No user session');
 
   return (
     <html lang="pt-BR">
