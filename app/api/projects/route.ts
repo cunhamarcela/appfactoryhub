@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { GitHubClient } from "@/lib/github"
 import { prisma } from "@/lib/prisma"
-import { getToken } from "next-auth/jwt"
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,13 +14,27 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    console.log('Projects API: Session valid, getting JWT token...')
-    // Get user's GitHub access token from the JWT token
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET })
-    console.log('Projects API: JWT token retrieved:', token ? 'Token exists' : 'No token')
-    console.log('Projects API: JWT token content:', token)
-    const accessToken = token?.accessToken as string
-    console.log('Projects API: Access token extracted:', accessToken ? 'Access token present' : 'No access token')
+    console.log('Projects API: Session valid, extracting access token from session...')
+    // For Auth.js v5, we need to get the token differently
+    // The accessToken should be available in the session or we need to get it from the database
+    
+    // First, let's try to get the user from database to find their account
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        accounts: {
+          where: { provider: 'github' }
+        }
+      }
+    })
+    
+    console.log('Projects API: User found:', user ? 'Yes' : 'No')
+    console.log('Projects API: GitHub accounts:', user?.accounts?.length || 0)
+    
+    const githubAccount = user?.accounts?.find(account => account.provider === 'github')
+    const accessToken = githubAccount?.access_token
+    
+    console.log('Projects API: Access token from database:', accessToken ? 'Access token present' : 'No access token')
     
     if (!accessToken) {
       console.log('Projects API: No access token, returning 400')
