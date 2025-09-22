@@ -11,7 +11,10 @@ export async function GET() {
     
     if (!session?.user?.email || !session?.user?.id) {
       console.log('Projects API: No session, email, or user ID, returning 401')
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ 
+        error: "Unauthorized",
+        details: "User session not found or incomplete"
+      }, { status: 401 })
     }
 
     console.log('Projects API: Session valid, extracting access token from session...')
@@ -38,7 +41,11 @@ export async function GET() {
     
     if (!accessToken) {
       console.log('Projects API: No access token, returning 400')
-      return NextResponse.json({ error: "GitHub not connected" }, { status: 400 })
+      return NextResponse.json({ 
+        error: "GitHub not connected",
+        details: "Please connect your GitHub account in settings to view projects",
+        action: "connect_github"
+      }, { status: 400 })
     }
 
     // Initialize GitHub client with user's token
