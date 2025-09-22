@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth"
 import { GitHubClient } from "@/lib/github"
 import { prisma } from "@/lib/prisma"
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     console.log('Projects API: Starting request processing...')
     const session = await auth()

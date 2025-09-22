@@ -62,75 +62,14 @@ export default function BoardPage({ params }: BoardPageProps) {
       
       setProject(currentProject)
 
-      // Mock tasks data
-      const mockTasks: Task[] = [
-        {
-          id: '1',
-          title: 'Criar repo do template e copiar App Factory',
-          status: 'done',
-          sprint: 'sprint0',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: '2', 
-          title: 'Preencher APP_SPEC_TEMPLATE.md',
-          status: 'doing',
-          sprint: 'sprint0',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: '3',
-          title: 'Definir BACKEND_CONTRACT.yaml',
-          status: 'todo',
-          sprint: 'sprint0',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: '4',
-          title: 'Scaffolding Flutter (MVVM + Riverpod)',
-          status: 'todo',
-          sprint: 'sprint0',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: '5',
-          title: 'Configurar Auth (Apple/Google/Email)',
-          status: 'todo',
-          sprint: 'sprint0',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: '6',
-          title: 'Entregar 3–5 telas core',
-          status: 'todo',
-          sprint: 'sprint1',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: '7',
-          title: 'Conectar backend conforme contrato',
-          status: 'todo',
-          sprint: 'sprint1',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: '8',
-          title: 'Empty states + loop diário + push básico',
-          status: 'todo',
-          sprint: 'sprint2',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      ]
+      // Fetch real tasks data from database
+      const tasksResponse = await fetch(`/api/projects/${params.slug}/tasks`)
+      if (!tasksResponse.ok) {
+        throw new Error('Failed to fetch tasks')
+      }
       
-      setTasks(mockTasks)
+      const tasksData = await tasksResponse.json()
+      setTasks(tasksData.tasks || [])
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load project')

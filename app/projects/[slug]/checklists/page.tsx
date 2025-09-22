@@ -65,57 +65,14 @@ export default function ChecklistsPage({ params }: ChecklistsPageProps) {
       
       setProject(currentProject)
 
-      // For now, we'll use mock data based on the seeds
-      // In a real implementation, you'd fetch from /api/projects/[slug]/checklists
-      const mockChecklists: ChecklistData[] = [
-        {
-          id: '1',
-          type: 'QA_RELEASE',
-          title: 'QA & Release Checklist',
-          progress: 20,
-          items: [
-            { id: 'auth', label: 'Auth: login/logout/reset + deep links ok', done: true },
-            { id: 'ads', label: 'Ads: interstitial cap + rewarded entrega recompensa', done: false },
-            { id: 'analytics', label: 'Analytics: eventos mínimos disparam', done: false },
-            { id: 'lgpd', label: 'LGPD: consentimento salvo e respeitado', done: false },
-            { id: 'build', label: 'Build/TestFlight sem crashes no fluxo principal', done: false }
-          ],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: '2',
-          type: 'GROWTH_LAUNCH',
-          title: 'Growth & Launch',
-          progress: 0,
-          items: [
-            { id: 'aso', label: 'ASO: ícone + screenshots (2 variações)', done: false },
-            { id: 'desc', label: 'Descrição focada em benefícios + 3 keywords', done: false },
-            { id: 'policy', label: 'Política de privacidade publicada', done: false },
-            { id: 'ads_campaigns', label: '2 vídeos + 2 estáticos; campanhas ativas', done: false },
-            { id: 'metrics', label: 'Monitorar CPI, IPM, D1, ARPDAU, eCPM, Fill', done: false }
-          ],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: '3',
-          type: 'UX_RETENTION',
-          title: 'UX & Retention',
-          progress: 40,
-          items: [
-            { id: 'onboarding', label: 'Onboarding ≤3 telas com promessa clara', done: true },
-            { id: 'empty', label: 'Empty states com CTA de ação', done: true },
-            { id: 'feedback', label: 'Feedback instantâneo pós-ação', done: false },
-            { id: 'loop', label: 'Loop diário (estreak leve)', done: false },
-            { id: 'perf', label: 'TTI < 2s, offline básico', done: false }
-          ],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      ]
+      // Fetch real checklists data from database
+      const checklistsResponse = await fetch(`/api/projects/${params.slug}/checklists`)
+      if (!checklistsResponse.ok) {
+        throw new Error('Failed to fetch checklists')
+      }
       
-      setChecklists(mockChecklists)
+      const checklistsData = await checklistsResponse.json()
+      setChecklists(checklistsData.checklists || [])
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load project')
@@ -138,12 +95,12 @@ export default function ChecklistsPage({ params }: ChecklistsPageProps) {
 
   const handleItemToggle = async (checklistId: string, itemId: string, done: boolean) => {
     try {
-      // In a real implementation, you'd call an API to update the checklist item
-      // For now, we'll just update the local state
+      // Update local state optimistically
+      let updatedItems: ChecklistItem[] = []
       setChecklists(prevChecklists => 
         prevChecklists.map(checklist => {
           if (checklist.id === checklistId) {
-            const updatedItems = checklist.items.map(item =>
+            updatedItems = checklist.items.map(item =>
               item.id === itemId ? { ...item, done } : item
             )
             const completedItems = updatedItems.filter(item => item.done).length
@@ -160,21 +117,28 @@ export default function ChecklistsPage({ params }: ChecklistsPageProps) {
         })
       )
 
-      // Here you would make an API call to persist the change
-      // await fetch(`/api/checklists/${checklistId}/items/${itemId}`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ done })
-      // })
+      // Persist the change to the database
+      const response = await fetch(`/api/checklists/${checklistId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: updatedItems })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update checklist')
+      }
 
     } catch (error) {
       console.error('Error updating checklist item:', error)
+      // Revert optimistic update on error
+      fetchProjectAndChecklists()
       throw error
     }
   }
 
   const handleReset = async (checklistId: string) => {
     try {
+      // Update local state optimistically
       setChecklists(prevChecklists => 
         prevChecklists.map(checklist => {
           if (checklist.id === checklistId) {
@@ -190,11 +154,21 @@ export default function ChecklistsPage({ params }: ChecklistsPageProps) {
         })
       )
 
-      // Here you would make an API call to reset the checklist
-      // await fetch(`/api/checklists/${checklistId}/reset`, { method: 'POST' })
+      // Persist the reset to the database
+      const response = await fetch(`/api/checklists/${checklistId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reset' })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to reset checklist')
+      }
 
     } catch (error) {
       console.error('Error resetting checklist:', error)
+      // Revert optimistic update on error
+      fetchProjectAndChecklists()
       throw error
     }
   }

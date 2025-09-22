@@ -16,13 +16,19 @@ import {
   Menu,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Plus,
+  Kanban,
+  CheckSquare,
+  FileText,
+  Bot
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Projetos", href: "/projects", icon: FolderOpen },
+  { name: "Novo Projeto", href: "/projects/new", icon: Plus },
   { name: "Finanças", href: "/finances", icon: DollarSign },
   { name: "Calendar", href: "/calendar", icon: Calendar },
   { name: "Configurações", href: "/settings", icon: Settings },

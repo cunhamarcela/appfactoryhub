@@ -2,7 +2,6 @@ import { auth } from "@/lib/auth"
 import { redirect, notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { 
   ArrowLeft, 
   Github, 
@@ -12,10 +11,13 @@ import {
   DollarSign,
   Zap,
   Copy,
-  Database,
-  Rocket
+  Database
 } from "lucide-react"
 import Link from "next/link"
+import { AgentSuggestions } from "@/components/AgentSuggestions"
+import { CopyEnvButton } from "@/components/CopyEnvButton"
+import { ProjectStatusBadge } from "@/components/ProjectStatusBadge"
+import { ProjectStatusActions } from "@/components/ProjectStatusActions"
 
 interface ProjectPageProps {
   params: { slug: string }
@@ -55,18 +57,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const totalChecklists = project.checklists.length
   const completedChecklists = project.checklists.filter(checklist => checklist.progress === 100).length
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "deployed":
-        return "gradient-success text-white border-0"
-      case "development":
-        return "gradient-secondary text-white border-0"
-      case "planning":
-        return "bg-gray-100 text-gray-700 border-0"
-      default:
-        return "bg-gray-100 text-gray-700 border-0"
-    }
-  }
 
   const getStackInstructions = (stack: string) => {
     if (stack === 'firebase') {
@@ -124,9 +114,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               <h1 className="text-4xl font-bold" style={{ color: 'var(--foreground)' }}>
                 {project.name}
               </h1>
-              <Badge className={`px-3 py-1 ${getStatusColor(project.status)}`}>
-                {project.status}
-              </Badge>
+              <ProjectStatusBadge status={project.status} />
+              <ProjectStatusActions 
+                projectSlug={project.slug} 
+                currentStatus={project.status}
+              />
             </div>
             <p className="text-lg" style={{ color: 'var(--foreground-secondary)' }}>
               {project.description || 'Projeto criado com App Factory Hub'}
@@ -245,9 +237,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--foreground)' }}>
-                    Variáveis de Ambiente
-                  </h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
+                      Variáveis de Ambiente
+                    </h3>
+                    <CopyEnvButton envVars={stackInfo.envVars} />
+                  </div>
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
                     <code className="text-sm">
                       {stackInfo.envVars.map((envVar, index) => (
@@ -359,10 +354,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 Obtenha sugestões personalizadas para próximos passos e melhorias do projeto.
               </p>
               
-              <Button className="w-full gradient-accent text-white rounded-xl">
-                <Rocket className="w-4 h-4 mr-2" />
-                Gerar Sugestões
-              </Button>
+              <AgentSuggestions 
+                projectSlug={project.slug}
+                projectName={project.name}
+              />
             </div>
           </div>
         </div>

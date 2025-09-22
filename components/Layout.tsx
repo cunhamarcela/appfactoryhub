@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect, useState } from 'react'
 import { Navigation } from './Navigation'
+import { ErrorBoundary } from './ErrorBoundary'
 import { cn } from '@/lib/utils'
 
 interface LayoutProps {
@@ -22,7 +23,7 @@ export function Layout({ children, hasSession }: LayoutProps) {
   }
 
   return (
-    <>
+    <ErrorBoundary>
       {hasSession && (
         <Navigation 
           onCollapseChange={setSidebarCollapsed}
@@ -35,8 +36,10 @@ export function Layout({ children, hasSession }: LayoutProps) {
           hasSession && (sidebarCollapsed ? "lg:pl-16" : "lg:pl-64")
         )}
       >
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </main>
-    </>
+    </ErrorBoundary>
   )
 }
