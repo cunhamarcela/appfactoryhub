@@ -3,8 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async headers() {
     const isProduction = process.env.NODE_ENV === 'production';
-    const scriptSrc = isProduction ? "'self' https://vercel.live https://fonts.googleapis.com https://accounts.google.com/gsi/client" : "'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://fonts.googleapis.com https://accounts.google.com/gsi/client";
-    const styleSrc = isProduction ? "'self' https://fonts.googleapis.com" : "'self' 'unsafe-inline' https://fonts.googleapis.com";
+    const scriptSrc = "'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://fonts.googleapis.com https://accounts.google.com/gsi/client";
+    const styleSrc = "'self' 'unsafe-inline' https://fonts.googleapis.com";
 
     return [
       {
