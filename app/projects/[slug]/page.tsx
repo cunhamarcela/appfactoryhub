@@ -10,12 +10,12 @@ import {
   FileText, 
   DollarSign,
   Zap,
-  Copy,
   Database
 } from "lucide-react"
 import Link from "next/link"
 import { AgentSuggestions } from "@/components/AgentSuggestions"
 import { CopyEnvButton } from "@/components/CopyEnvButton"
+import { CopyButton } from "@/components/CopyButton"
 import { ProjectStatusBadge } from "@/components/ProjectStatusBadge"
 import { ProjectStatusActions } from "@/components/ProjectStatusActions"
 
@@ -198,13 +198,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       </Button>
                     </a>
                     {project.repoUrl && (
-                      <Button 
-                        variant="outline" 
+                      <CopyButton 
+                        text={project.repoUrl}
                         className="rounded-xl"
-                        onClick={() => navigator.clipboard.writeText(project.repoUrl!)}
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
+                      />
                     )}
                   </div>
                 </div>

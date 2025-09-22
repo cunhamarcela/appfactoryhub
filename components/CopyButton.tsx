@@ -1,24 +1,16 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Copy, Check } from "lucide-react"
+import { useState } from "react"
 
 interface CopyButtonProps {
   text: string
-  variant?: "default" | "outline" | "ghost"
-  size?: "sm" | "default" | "lg"
   className?: string
-  children?: React.ReactNode
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
 }
 
-export function CopyButton({ 
-  text, 
-  variant = "outline", 
-  size = "sm", 
-  className = "",
-  children 
-}: CopyButtonProps) {
+export function CopyButton({ text, className, variant = "outline" }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -32,23 +24,15 @@ export function CopyButton({
   }
 
   return (
-    <Button
+    <Button 
       variant={variant}
-      size={size}
-      className={`rounded-xl transition-all duration-200 ${className}`}
+      className={className}
       onClick={handleCopy}
-      disabled={copied}
     >
       {copied ? (
-        <>
-          <Check className="w-4 h-4 mr-2" />
-          Copiado!
-        </>
+        <Check className="w-4 h-4 text-green-600" />
       ) : (
-        <>
-          <Copy className="w-4 h-4 mr-2" />
-          {children || "Copiar"}
-        </>
+        <Copy className="w-4 h-4" />
       )}
     </Button>
   )
