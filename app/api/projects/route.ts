@@ -21,10 +21,15 @@ export async function GET(req: NextRequest) {
     }
 
     // Initialize GitHub client with user's token
+    console.log('Projects API: Initializing GitHub client with token:', accessToken ? 'Token present' : 'No token')
     const github = new GitHubClient(accessToken)
     
     // Get user's repositories from GitHub (authenticated user's repos)
+    console.log('Projects API: Fetching repositories from GitHub...')
+    const startTime = Date.now()
     const repos = await github.getUserRepositories()
+    const endTime = Date.now()
+    console.log(`Projects API: GitHub repositories fetched successfully in ${endTime - startTime}ms. Found ${repos.length} repositories.`)
     
     // Get existing projects from database
     const existingProjects = await prisma.project.findMany({

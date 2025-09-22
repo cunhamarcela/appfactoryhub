@@ -83,6 +83,9 @@ export class GitHubClient {
       ? `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`
       : `https://api.github.com/user/repos?sort=updated&per_page=100&affiliation=owner`
     
+    console.log('GitHubClient: Making request to:', endpoint)
+    console.log('GitHubClient: Token available:', this.token ? 'Yes' : 'No')
+    
     const response = await fetch(endpoint, {
       headers: {
         'Authorization': `Bearer ${this.token}`,
@@ -90,12 +93,17 @@ export class GitHubClient {
       },
     })
 
+    console.log('GitHubClient: Response status:', response.status, response.statusText)
+    
     if (!response.ok) {
       const errorText = await response.text()
+      console.error('GitHubClient: Error response:', errorText)
       throw new Error(`Failed to fetch repositories: ${response.status} ${response.statusText} - ${errorText}`)
     }
 
-    return response.json()
+    const data = await response.json()
+    console.log('GitHubClient: Successfully fetched', data.length, 'repositories')
+    return data
   }
 
   async getRepository(owner: string, repo: string) {
