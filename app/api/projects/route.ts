@@ -6,17 +6,24 @@ import { getToken } from "next-auth/jwt"
 
 export async function GET(req: NextRequest) {
   try {
+    console.log('Projects API: Starting request processing...')
     const session = await auth()
+    console.log('Projects API: Session retrieved:', session ? 'Session exists' : 'No session')
     
     if (!session?.user?.email) {
+      console.log('Projects API: No session or email, returning 401')
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    console.log('Projects API: Session valid, getting JWT token...')
     // Get user's GitHub access token from the JWT token
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+    console.log('Projects API: JWT token retrieved:', token ? 'Token exists' : 'No token')
     const accessToken = token?.accessToken as string
+    console.log('Projects API: Access token extracted:', accessToken ? 'Access token present' : 'No access token')
     
     if (!accessToken) {
+      console.log('Projects API: No access token, returning 400')
       return NextResponse.json({ error: "GitHub not connected" }, { status: 400 })
     }
 
