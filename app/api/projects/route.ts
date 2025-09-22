@@ -17,8 +17,9 @@ export async function GET(req: NextRequest) {
 
     console.log('Projects API: Session valid, getting JWT token...')
     // Get user's GitHub access token from the JWT token
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET })
     console.log('Projects API: JWT token retrieved:', token ? 'Token exists' : 'No token')
+    console.log('Projects API: JWT token content:', token)
     const accessToken = token?.accessToken as string
     console.log('Projects API: Access token extracted:', accessToken ? 'Access token present' : 'No access token')
     
