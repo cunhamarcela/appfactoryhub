@@ -17,11 +17,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Plus,
-  Kanban,
-  CheckSquare,
-  FileText,
-  Bot
+  Plus
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
