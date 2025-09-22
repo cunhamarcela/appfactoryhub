@@ -1,0 +1,11 @@
+{
+  "title": "Checklist padrão de Feature",
+  "items": [
+    {"id":"spec","label":"Escrever Feature Brief (prompts/feature_brief.md)","done":false},
+    {"id":"contracts","label":"Verificar impacto no BACKEND_CONTRACT.yaml","done":false},
+    {"id":"analytics","label":"Adicionar eventos analytics (ANALYTICS_EVENTS.md)","done":false},
+    {"id":"ads","label":"Checar impacto em Ads (ADS_PLAYBOOK.md)","done":false},
+    {"id":"tests","label":"Atualizar testes críticos/fluxo principal","done":false},
+    {"id":"docs","label":"Atualizar README/CHANGELOG","done":false}
+  ]
+}

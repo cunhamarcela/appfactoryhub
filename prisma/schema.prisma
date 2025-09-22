@@ -48,6 +48,7 @@ model User {
   projects      Project[]
   tasks         Task[]
   financeRecords FinanceRecord[]
+  settings      UserSettings?
 }
 
 model VerificationToken {
@@ -67,8 +68,15 @@ model Project {
   repoUrl      String?
   repoFullName String?
   githubRepo   String?   // Keep for backward compatibility
-  stack        String    @default("firebase") // firebase | supabase
+  stack        String    @default("firebase") // firebase | supabase (legado)
   status       String    @default("planning") // planning | development | deployed | archived
+
+  // NOVO: escolhas de stack
+  techLanguage String    @default("flutter")     // flutter | react | react_native
+  techFrontend String    @default("flutter")     // flutter | nextjs | react_native
+  techBackend  String    @default("firebase_functions") // none | node | firebase_functions | supabase_edge
+  techDatabase String    @default("firebase")    // firebase | supabase
+
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   userId       String
@@ -76,6 +84,10 @@ model Project {
   tasks        Task[]
   checklists   Checklist[]
   financeRecords FinanceRecord[]
+  
+  // NOVO: superfícies (app, web etc.)
+  surfaces     Surface[]
+  features     Feature[] // NOVO
 }
 
 model Task {
@@ -122,4 +134,42 @@ model FinanceRecord {
   createdAt   DateTime @default(now())
   ownerId     String
   owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
+model UserSettings {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  openaiApiKey String? // Encrypted OpenAI API key
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Superfícies (app_mobile, web_app)
+model Surface {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  kind        String   // "app_mobile" | "web_app"
+  name        String   // ex.: "HiClub App", "HiClub Web"
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Feature por projeto
+model Feature {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  surfaces    String[] // ex.: ["app_mobile","web_app"]
+  status      String   @default("planned") // planned | in_progress | done
+
+  // Metadados da análise do repo no momento da criação
+  repoSnapshot Json?   // { languages, tree, packages, paths }
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

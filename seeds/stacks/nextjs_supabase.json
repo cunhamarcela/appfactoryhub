@@ -1,0 +1,19 @@
+{
+  "stack": "nextjs_supabase",
+  "checklists": [
+    {
+      "type": "QA_RELEASE",
+      "title": "QA & Release (Next.js + Supabase)",
+      "items": [
+        {"id":"auth_web_sb","label":"Auth Supabase no Next.js com SSR/Client OK","done":false},
+        {"id":"policies_web","label":"RLS policies aplicadas e testadas","done":false},
+        {"id":"analytics_web","label":"Analytics + error tracking configurados","done":false}
+      ]
+    }
+  ],
+  "tasks": [
+    {"title":"Adicionar supabase-js e configurar client/server","sprint":"Sprint 0"},
+    {"title":"Criar rotas protegidas com middleware/SSR","sprint":"Sprint 0"},
+    {"title":"Implementar UI de login/registro","sprint":"Sprint 0"}
+  ]
+}

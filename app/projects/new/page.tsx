@@ -1,21 +1,51 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Rocket, Database, Code, Loader2 } from "lucide-react"
+import { ArrowLeft, Rocket, Database, Code, Loader2, Smartphone, Globe, Server, HardDrive } from "lucide-react"
 import Link from "next/link"
+
+interface StackCatalog {
+  languages: string[]
+  frontends: string[]
+  backends: string[]
+  databases: string[]
+}
 
 export default function NewProjectPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [stackCatalog, setStackCatalog] = useState<StackCatalog | null>(null)
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
     niche: "",
-    stack: "firebase",
-    description: ""
+    stack: "firebase", // legado
+    description: "",
+    // Novos campos de stack
+    techLanguage: "flutter",
+    techFrontend: "flutter", 
+    techBackend: "firebase_functions",
+    techDatabase: "firebase",
+    surfaces: ["app_mobile"] as string[]
   })
+
+  // Buscar catálogo de stacks
+  useEffect(() => {
+    const fetchStackCatalog = async () => {
+      try {
+        const response = await fetch('/api/stacks/catalog')
+        if (response.ok) {
+          const catalog = await response.json()
+          setStackCatalog(catalog)
+        }
+      } catch (error) {
+        console.error('Error fetching stack catalog:', error)
+      }
+    }
+    fetchStackCatalog()
+  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -24,6 +54,24 @@ export default function NewProjectPage() {
       [name]: value,
       // Auto-generate slug from name
       ...(name === 'name' && { slug: value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') })
+    }))
+  }
+
+  const handleSurfaceToggle = (surface: string) => {
+    setFormData(prev => ({
+      ...prev,
+      surfaces: prev.surfaces.includes(surface)
+        ? prev.surfaces.filter(s => s !== surface)
+        : [...prev.surfaces, surface]
+    }))
+  }
+
+  const handleStackSelection = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+      // Atualizar stack legado baseado na seleção
+      ...(field === 'techDatabase' && { stack: value })
     }))
   }
 
@@ -57,10 +105,16 @@ export default function NewProjectPage() {
           name: formData.name,
           slug: formData.slug,
           niche: formData.niche,
-          stack: formData.stack,
+          stack: formData.stack, // legado
           description: formData.description,
           repoUrl: repoData.repoUrl,
-          repoFullName: repoData.fullName
+          repoFullName: repoData.fullName,
+          // Novos campos de stack
+          techLanguage: formData.techLanguage,
+          techFrontend: formData.techFrontend,
+          techBackend: formData.techBackend,
+          techDatabase: formData.techDatabase,
+          surfaces: formData.surfaces
         })
       })
 
@@ -120,15 +174,21 @@ export default function NewProjectPage() {
 
 ## Projeto: ${data.name}
 
-### Stack: ${data.stack}
+### Stack Tecnológica
+- **Linguagem:** ${data.techLanguage}
+- **Frontend:** ${data.techFrontend}
+- **Backend:** ${data.techBackend}
+- **Database:** ${data.techDatabase}
+- **Superfícies:** ${data.surfaces.join(', ')}
+
 ### Nicho: ${data.niche || 'Não especificado'}
 
 Este projeto foi criado usando o App Factory Hub e segue o Playbook padrão.
 
 ## Próximos Passos
 
-1. Configure as variáveis de ambiente
-2. Execute o setup inicial do banco de dados
+1. Configure as variáveis de ambiente para ${data.techDatabase}
+2. Execute o setup inicial do ${data.techBackend}
 3. Siga o board de tarefas para desenvolvimento
 4. Use os templates e prompts disponíveis no Hub
 
@@ -146,10 +206,13 @@ ${data.description || 'Descrição do projeto a ser preenchida.'}
 
 ## Stack Tecnológica
 
-- **Backend**: ${data.stack === 'firebase' ? 'Firebase' : 'Supabase'}
-- **Frontend**: Flutter
+- **Linguagem**: ${data.techLanguage}
+- **Frontend**: ${data.techFrontend}
+- **Backend**: ${data.techBackend}
+- **Database**: ${data.techDatabase}
+- **Superfícies**: ${data.surfaces.join(', ')}
 - **Autenticação**: Apple/Google/Email
-- **Analytics**: Firebase Analytics
+- **Analytics**: ${data.techDatabase === 'firebase' ? 'Firebase Analytics' : 'Supabase Analytics'}
 - **Monetização**: AdMob
 
 ## Nicho
@@ -167,13 +230,13 @@ ${data.niche || 'A ser definido'}
 ## Roadmap
 
 ### Sprint 0
-- Setup inicial e configurações
+- Setup inicial e configurações (${data.techDatabase})
 - Implementação da autenticação
 - Analytics básicos
 
 ### Sprint 1
-- Desenvolvimento das telas core
-- Integração com backend
+- Desenvolvimento das telas core (${data.techFrontend})
+- Integração com backend (${data.techBackend})
 - Implementação de anúncios
 
 ### Sprint 2
@@ -186,11 +249,14 @@ ${data.niche || 'A ser definido'}
 
 ${data.description || 'Projeto criado com App Factory Hub'}
 
-## Stack
+## Stack Tecnológica
 
-- **${data.stack === 'firebase' ? 'Firebase' : 'Supabase'}**
-- Flutter
-- ${data.niche ? `Nicho: ${data.niche}` : ''}
+- **Linguagem**: ${data.techLanguage}
+- **Frontend**: ${data.techFrontend}
+- **Backend**: ${data.techBackend}
+- **Database**: ${data.techDatabase}
+- **Superfícies**: ${data.surfaces.join(', ')}
+- ${data.niche ? `**Nicho**: ${data.niche}` : ''}
 
 ## Desenvolvimento
 
@@ -199,8 +265,8 @@ Este projeto segue o App Factory Playbook. Consulte os arquivos AGENTS.md e APP_
 ## Setup
 
 1. Clone o repositório
-2. Configure as variáveis de ambiente
-3. Execute \`flutter pub get\`
+2. Configure as variáveis de ambiente para ${data.techDatabase}
+3. Execute o setup do ${data.techFrontend}
 4. Siga as instruções no AGENTS.md
 
 ---
@@ -208,9 +274,15 @@ Este projeto segue o App Factory Playbook. Consulte os arquivos AGENTS.md e APP_
 Criado com ❤️ usando [App Factory Hub](https://appfactoryhub.vercel.app)
 `
 
-  const stacks = [
-    { value: "firebase", label: "Firebase", description: "Next.js + Firebase + Vercel" },
-    { value: "supabase", label: "Supabase", description: "Next.js + Supabase + Vercel" }
+  // Definições de opções para os selects
+  const getStackOptions = () => {
+    if (!stackCatalog) return { languages: [], frontends: [], backends: [], databases: [] }
+    return stackCatalog
+  }
+
+  const surfaceOptions = [
+    { value: "app_mobile", label: "App Mobile", description: "iOS & Android", icon: Smartphone },
+    { value: "web_app", label: "Web App", description: "Progressive Web App", icon: Globe }
   ]
 
   const niches = [
@@ -301,39 +373,154 @@ Criado com ❤️ usando [App Factory Hub](https://appfactoryhub.vercel.app)
                   </select>
                 </div>
 
-                {/* Stack Selection */}
-                <div>
-                  <label className="block text-sm font-medium mb-4" style={{ color: 'var(--foreground)' }}>
-                    Stack Tecnológica *
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {stacks.map(stack => (
-                      <div
-                        key={stack.value}
-                        className={`p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 ${
-                          formData.stack === stack.value 
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => setFormData(prev => ({ ...prev, stack: stack.value }))}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                            stack.value === 'firebase' ? 'gradient-secondary' : 'gradient-success'
-                          }`}>
-                            <Database className="w-5 h-5 text-white" />
+                {/* Stack Selection Completa */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>
+                      Stack Tecnológica *
+                    </h3>
+                    
+                    {/* Linguagem */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                        Linguagem Principal
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {getStackOptions().languages.map(language => (
+                          <div
+                            key={language}
+                            className={`p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                              formData.techLanguage === language 
+                                ? 'border-blue-500 bg-blue-50' 
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => handleStackSelection('techLanguage', language)}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <Code className="w-4 h-4" />
+                              <span className="font-medium capitalize">{language}</span>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>
-                              {stack.label}
-                            </h3>
-                            <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
-                              {stack.description}
-                            </p>
-                          </div>
-                        </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Frontend */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                        Frontend Framework
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {getStackOptions().frontends.map(frontend => (
+                          <div
+                            key={frontend}
+                            className={`p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                              formData.techFrontend === frontend 
+                                ? 'border-green-500 bg-green-50' 
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => handleStackSelection('techFrontend', frontend)}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <Globe className="w-4 h-4" />
+                              <span className="font-medium capitalize">{frontend}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Backend */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                        Backend
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        {getStackOptions().backends.map(backend => (
+                          <div
+                            key={backend}
+                            className={`p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                              formData.techBackend === backend 
+                                ? 'border-purple-500 bg-purple-50' 
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => handleStackSelection('techBackend', backend)}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <Server className="w-4 h-4" />
+                              <span className="font-medium text-xs capitalize">{backend.replace('_', ' ')}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Database */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                        Database
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {getStackOptions().databases.map(database => (
+                          <div
+                            key={database}
+                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                              formData.techDatabase === database 
+                                ? 'border-orange-500 bg-orange-50' 
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => handleStackSelection('techDatabase', database)}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                database === 'firebase' ? 'bg-orange-500' : 'bg-green-500'
+                              }`}>
+                                <HardDrive className="w-4 h-4 text-white" />
+                              </div>
+                              <span className="font-medium capitalize">{database}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Superfícies */}
+                    <div>
+                      <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                        Superfícies do Projeto *
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {surfaceOptions.map(surface => {
+                          const Icon = surface.icon
+                          return (
+                            <div
+                              key={surface.value}
+                              className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                formData.surfaces.includes(surface.value) 
+                                  ? 'border-indigo-500 bg-indigo-50' 
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                              onClick={() => handleSurfaceToggle(surface.value)}
+                            >
+                              <div className="flex items-center space-x-3">
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                  formData.surfaces.includes(surface.value) ? 'bg-indigo-500' : 'bg-gray-400'
+                                }`}>
+                                  <Icon className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold">{surface.label}</h4>
+                                  <p className="text-sm text-gray-600">{surface.description}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                      {formData.surfaces.length === 0 && (
+                        <p className="text-sm text-red-500 mt-2">Selecione pelo menos uma superfície</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -354,11 +541,11 @@ Criado com ❤️ usando [App Factory Hub](https://appfactoryhub.vercel.app)
                 </div>
 
                 {/* Submit Button */}
-                <div className="flex items-center space-x-4 pt-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
                   <Button
                     type="submit"
-                    disabled={loading || !formData.name || !formData.slug}
-                    className="gradient-primary text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                    disabled={loading || !formData.name || !formData.slug || formData.surfaces.length === 0}
+                    className="gradient-primary text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 w-full sm:w-auto"
                   >
                     {loading ? (
                       <>
@@ -372,8 +559,8 @@ Criado com ❤️ usando [App Factory Hub](https://appfactoryhub.vercel.app)
                       </>
                     )}
                   </Button>
-                  <Link href="/projects">
-                    <Button variant="outline" className="rounded-xl">
+                  <Link href="/projects" className="w-full sm:w-auto">
+                    <Button variant="outline" className="rounded-xl w-full">
                       Cancelar
                     </Button>
                   </Link>
@@ -404,11 +591,15 @@ Criado com ❤️ usando [App Factory Hub](https://appfactoryhub.vercel.app)
                 </div>
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 gradient-success rounded-full mt-2"></div>
-                  <span>Tasks e checklists iniciais criados</span>
+                  <span>Tasks e checklists personalizados por stack</span>
                 </div>
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 gradient-accent rounded-full mt-2"></div>
-                  <span>Configuração inicial do banco de dados</span>
+                  <span>Superfícies do projeto configuradas</span>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-2 h-2 gradient-info rounded-full mt-2"></div>
+                  <span>Seeds específicos aplicados automaticamente</span>
                 </div>
               </div>
             </div>

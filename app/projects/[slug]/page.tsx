@@ -10,7 +10,9 @@ import {
   FileText, 
   DollarSign,
   Zap,
-  Database
+  Database,
+  RefreshCw,
+  Lightbulb
 } from "lucide-react"
 import Link from "next/link"
 import { AgentSuggestions } from "@/components/AgentSuggestions"
@@ -18,6 +20,7 @@ import { CopyEnvButton } from "@/components/CopyEnvButton"
 import { CopyButton } from "@/components/CopyButton"
 import { ProjectStatusBadge } from "@/components/ProjectStatusBadge"
 import { ProjectStatusActions } from "@/components/ProjectStatusActions"
+import { ProjectSyncButton } from "@/components/ProjectSyncButton"
 
 interface ProjectPageProps {
   params: { slug: string }
@@ -136,19 +139,49 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               </h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
                     Stack Tecnológica
                   </label>
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      project.stack === 'firebase' ? 'gradient-secondary' : 'gradient-success'
-                    }`}>
-                      <Database className="w-4 h-4 text-white" />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="text-center">
+                      <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-blue-500 flex items-center justify-center">
+                        <Database className="w-6 h-6 text-white" />
+                      </div>
+                      <p className="text-xs font-medium" style={{ color: 'var(--foreground-secondary)' }}>Linguagem</p>
+                      <p className="text-sm font-semibold capitalize" style={{ color: 'var(--foreground)' }}>
+                        {project.techLanguage || 'flutter'}
+                      </p>
                     </div>
-                    <span className="font-medium capitalize" style={{ color: 'var(--foreground)' }}>
-                      {project.stack}
-                    </span>
+                    <div className="text-center">
+                      <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-green-500 flex items-center justify-center">
+                        <Database className="w-6 h-6 text-white" />
+                      </div>
+                      <p className="text-xs font-medium" style={{ color: 'var(--foreground-secondary)' }}>Frontend</p>
+                      <p className="text-sm font-semibold capitalize" style={{ color: 'var(--foreground)' }}>
+                        {project.techFrontend || 'flutter'}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-purple-500 flex items-center justify-center">
+                        <Database className="w-6 h-6 text-white" />
+                      </div>
+                      <p className="text-xs font-medium" style={{ color: 'var(--foreground-secondary)' }}>Backend</p>
+                      <p className="text-sm font-semibold capitalize" style={{ color: 'var(--foreground)' }}>
+                        {project.techBackend || 'firebase_functions'}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <div className={`w-12 h-12 mx-auto mb-2 rounded-lg flex items-center justify-center ${
+                        (project.techDatabase || project.stack) === 'firebase' ? 'bg-orange-500' : 'bg-emerald-500'
+                      }`}>
+                        <Database className="w-6 h-6 text-white" />
+                      </div>
+                      <p className="text-xs font-medium" style={{ color: 'var(--foreground-secondary)' }}>Database</p>
+                      <p className="text-sm font-semibold capitalize" style={{ color: 'var(--foreground)' }}>
+                        {project.techDatabase || project.stack}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -185,7 +218,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               {/* Repository Links */}
               {(project.repoUrl || project.githubRepo) && (
                 <div className="mt-6 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-3 mb-4">
                     <a 
                       href={project.repoUrl || project.githubRepo || '#'} 
                       target="_blank" 
@@ -204,6 +237,19 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       />
                     )}
                   </div>
+                  
+                  {/* Sync Button */}
+                  {project.repoFullName && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
+                        Sincronizar informações do repositório
+                      </span>
+                      <ProjectSyncButton 
+                        projectSlug={project.slug}
+                        className="rounded-xl"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -324,6 +370,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   <Button variant="outline" className="w-full justify-start rounded-xl">
                     <FileText className="w-4 h-4 mr-3" />
                     Templates
+                  </Button>
+                </Link>
+
+                <Link href={`/projects/${project.slug}/features`}>
+                  <Button variant="outline" className="w-full justify-start rounded-xl">
+                    <Lightbulb className="w-4 h-4 mr-3" />
+                    Features
                   </Button>
                 </Link>
 

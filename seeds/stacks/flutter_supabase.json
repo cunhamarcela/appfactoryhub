@@ -1,0 +1,19 @@
+{
+  "stack": "flutter_supabase",
+  "checklists": [
+    {
+      "type": "QA_RELEASE",
+      "title": "QA & Release (Flutter + Supabase)",
+      "items": [
+        {"id":"auth_sb","label":"Supabase Auth (OAuth + email) testado no app","done":false},
+        {"id":"rls","label":"RLS policies revisadas para todas as tabelas","done":false},
+        {"id":"edge","label":"Edge Functions (se necessário) para lógicas sensíveis","done":false}
+      ]
+    }
+  ],
+  "tasks": [
+    {"title":"Criar projeto Supabase e configurar .env","sprint":"Sprint 0"},
+    {"title":"Definir schema SQL (DDL) + policies RLS","sprint":"Sprint 0"},
+    {"title":"Integrar supabase-flutter e wrappers de auth/db","sprint":"Sprint 0"}
+  ]
+}

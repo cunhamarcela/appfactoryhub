@@ -1,0 +1,17 @@
+{
+  "stack": "react_native_firebase",
+  "checklists": [
+    {
+      "type": "QA_RELEASE",
+      "title": "QA & Release (React Native + Firebase)",
+      "items": [
+        {"id":"rn_auth","label":"Firebase Auth (Apple/Google/Email) via react-native-firebase","done":false},
+        {"id":"rn_crash","label":"Crashlytics e Analytics integrados","done":false}
+      ]
+    }
+  ],
+  "tasks": [
+    {"title":"Instalar react-native-firebase e configurar nativo iOS/Android","sprint":"Sprint 0"},
+    {"title":"Criar AuthContext + hooks","sprint":"Sprint 0"}
+  ]
+}

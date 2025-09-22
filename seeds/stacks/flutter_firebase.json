@@ -1,0 +1,20 @@
+{
+  "stack": "flutter_firebase",
+  "checklists": [
+    {
+      "type": "QA_RELEASE",
+      "title": "QA & Release (Flutter + Firebase)",
+      "items": [
+        {"id":"auth_ff","label":"Configurar Firebase Auth (Apple/Google/Email)","done":false},
+        {"id":"firestore","label":"Definir coleções + regras de segurança (Firestore/Storage)","done":false},
+        {"id":"analytics_fb","label":"Firebase Analytics + Crashlytics configurados","done":false},
+        {"id":"ads_admob","label":"AdMob: banner/interstitial/rewarded com caps e consentimento","done":false}
+      ]
+    }
+  ],
+  "tasks": [
+    {"title":"Criar projeto Firebase e apps iOS/Android; baixar GoogleService-Info/ google-services.json","sprint":"Sprint 0"},
+    {"title":"Instalar/flutterfire configure e inicializar no app","sprint":"Sprint 0"},
+    {"title":"Implementar AuthRepository Apple/Google/Email","sprint":"Sprint 0"}
+  ]
+}

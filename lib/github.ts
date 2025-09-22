@@ -139,4 +139,173 @@ export class GitHubClient {
     
     return results
   }
+
+  async detectTechStack(owner: string, repo: string): Promise<string> {
+    try {
+      // Check for common files that indicate tech stack
+      const filesToCheck = [
+        'pubspec.yaml', // Flutter
+        'package.json', // React Native/Node.js
+        'android/app/build.gradle', // Android
+        'ios/Podfile', // iOS
+        'firebase.json', // Firebase
+        'supabase/config.toml', // Supabase
+        '.firebaserc' // Firebase
+      ]
+
+      const fileChecks = await Promise.allSettled(
+        filesToCheck.map(async (file) => {
+          const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${file}`, {
+            headers: {
+              'Authorization': `Bearer ${this.token}`,
+              'Accept': 'application/vnd.github.v3+json',
+            },
+          })
+          return { file, exists: response.ok }
+        })
+      )
+
+      const existingFiles = fileChecks
+        .filter((result): result is PromiseFulfilledResult<{file: string, exists: boolean}> => 
+          result.status === 'fulfilled' && result.value.exists
+        )
+        .map(result => result.value.file)
+
+      // Determine stack based on existing files
+      if (existingFiles.includes('pubspec.yaml')) {
+        // Check if it's using Firebase or Supabase
+        if (existingFiles.includes('firebase.json') || existingFiles.includes('.firebaserc')) {
+          return 'firebase'
+        } else if (existingFiles.includes('supabase/config.toml')) {
+          return 'supabase'
+        }
+        // Default to firebase for Flutter projects
+        return 'firebase'
+      }
+
+      // For React Native projects
+      if (existingFiles.includes('package.json')) {
+        // Try to read package.json to check dependencies
+        try {
+          const packageResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/package.json`, {
+            headers: {
+              'Authorization': `Bearer ${this.token}`,
+              'Accept': 'application/vnd.github.v3+json',
+            },
+          })
+          
+          if (packageResponse.ok) {
+            const packageData = await packageResponse.json()
+            const packageContent = JSON.parse(Buffer.from(packageData.content, 'base64').toString())
+            
+            const dependencies = {
+              ...packageContent.dependencies,
+              ...packageContent.devDependencies
+            }
+            
+            if (dependencies['@supabase/supabase-js'] || dependencies['supabase']) {
+              return 'supabase'
+            } else if (dependencies['firebase'] || dependencies['@react-native-firebase/app']) {
+              return 'firebase'
+            }
+          }
+        } catch (error) {
+          console.warn('Could not read package.json:', error)
+        }
+      }
+
+      // Default fallback
+      return 'firebase'
+    } catch (error) {
+      console.warn('Error detecting tech stack:', error)
+      return 'firebase' // Default fallback
+    }
+  }
+
+  async getRepositoryLanguages(owner: string, repo: string) {
+    try {
+      const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`, {
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch repository languages: ${response.statusText}`)
+      }
+
+      return response.json()
+    } catch (error) {
+      console.warn('Error fetching repository languages:', error)
+      return {}
+    }
+  }
+
+  async getRepositoryTree(owner: string, repo: string, ref = "main") {
+    try {
+      const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${ref}?recursive=1`, {
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch repository tree: ${response.statusText}`)
+      }
+
+      return response.json()
+    } catch (error) {
+      console.warn('Error fetching repository tree:', error)
+      return { tree: [] }
+    }
+  }
+}
+
+// Helper functions for the new addon features
+export async function ghGenerateFromTemplate(owner: string, template: string, name: string, description?: string) {
+  const token = process.env.GITHUB_TOKEN!;
+  const res = await fetch(`https://api.github.com/repos/${owner}/${template}/generate`, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${token}`, "Accept": "application/vnd.github+json" },
+    body: JSON.stringify({ owner, name, description: description ?? "Repo gerado pelo App Factory Hub", private: true })
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json(); // { html_url, full_name, ... }
+}
+
+export async function ghWriteFiles(fullName: string, files: {path:string; content:string; message?:string}[]) {
+  const token = process.env.GITHUB_TOKEN!;
+  const results: {path:string; ok:boolean}[] = [];
+  for (const f of files) {
+    const res = await fetch(`https://api.github.com/repos/${fullName}/contents/${encodeURIComponent(f.path)}`, {
+      method: "PUT",
+      headers: { "Authorization": `Bearer ${token}`, "Accept": "application/vnd.github+json" },
+      body: JSON.stringify({
+        message: f.message ?? `chore: add ${f.path}`,
+        content: Buffer.from(f.content, "utf-8").toString("base64")
+      })
+    });
+    results.push({ path: f.path, ok: res.ok });
+  }
+  return results;
+}
+
+export async function ghGetLanguages(fullName: string) {
+  const token = process.env.GITHUB_TOKEN!;
+  const res = await fetch(`https://api.github.com/repos/${fullName}/languages`, {
+    headers: { "Authorization": `Bearer ${token}`, "Accept": "application/vnd.github+json" }
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json(); // { Dart: 12345, ... }
+}
+
+export async function ghGetTree(fullName: string, ref = "main") {
+  const token = process.env.GITHUB_TOKEN!;
+  const res = await fetch(`https://api.github.com/repos/${fullName}/git/trees/${ref}?recursive=1`, {
+    headers: { "Authorization": `Bearer ${token}`, "Accept": "application/vnd.github+json" }
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json(); // { tree: [{path, type}], ... }
 }

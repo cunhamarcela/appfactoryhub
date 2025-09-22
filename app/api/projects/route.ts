@@ -249,7 +249,18 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { name, slug, niche, stack, description } = body
+    const { 
+      name, 
+      slug, 
+      niche, 
+      stack, 
+      description,
+      techLanguage,
+      techFrontend,
+      techBackend,
+      techDatabase,
+      surfaces
+    } = body
 
     // Validate required fields
     if (!name || !slug) {
@@ -286,9 +297,28 @@ export async function POST(req: NextRequest) {
         stack: stack || "firebase",
         status: "planning",
         userId: session.user.id,
-        ...(niche && { niche })
+        ...(niche && { niche }),
+        // New tech stack fields
+        techLanguage: techLanguage || "flutter",
+        techFrontend: techFrontend || "flutter", 
+        techBackend: techBackend || "firebase_functions",
+        techDatabase: techDatabase || "firebase"
       }
     })
+
+    // Create surfaces if provided
+    if (surfaces && Array.isArray(surfaces) && surfaces.length > 0) {
+      const surfacesToCreate = surfaces.map((surface: string) => ({
+        projectId: project.id,
+        kind: surface,
+        name: surface === "app_mobile" ? `${name} App` : `${name} Web`,
+        active: true
+      }));
+      
+      await prisma.surface.createMany({
+        data: surfacesToCreate
+      });
+    }
 
     return NextResponse.json({ project }, { status: 201 })
 

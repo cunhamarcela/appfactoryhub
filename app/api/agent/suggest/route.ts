@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import OpenAI from "openai"
+import { getUserOpenAIKey } from "../../settings/route"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// OpenAI will be initialized dynamically with user or environment key
 
 export async function POST(req: NextRequest) {
   try {
@@ -123,8 +122,15 @@ Foque em:
 
 Seja específico e prático. Considere o stack ${project.stack} e o nicho ${project.niche || 'geral'}.`
 
+    // Get user's OpenAI key or use environment key
+    const userApiKey = session.user.id ? await getUserOpenAIKey(session.user.id) : null
+    const apiKey = userApiKey || process.env.OPENAI_API_KEY
+
+    // Initialize OpenAI client with the appropriate key
+    const openai = apiKey ? new OpenAI({ apiKey }) : null
+
     // Call OpenAI API
-    if (!process.env.OPENAI_API_KEY) {
+    if (!openai || !apiKey) {
       // Return mock data if OpenAI is not configured
       return NextResponse.json({
         next_steps: [
