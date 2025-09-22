@@ -31,6 +31,7 @@ const nextConfig: NextConfig = {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains'
           },
+          /*
           {
             key: 'Content-Security-Policy',
             value: [
@@ -49,6 +50,7 @@ const nextConfig: NextConfig = {
               "upgrade-insecure-requests"
             ].join('; ')
           },
+          */
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()'
