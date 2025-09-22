@@ -9,8 +9,8 @@ export async function GET() {
     const session = await auth()
     console.log('Projects API: Session retrieved:', session ? 'Session exists' : 'No session')
     
-    if (!session?.user?.email) {
-      console.log('Projects API: No session or email, returning 401')
+    if (!session?.user?.email || !session?.user?.id) {
+      console.log('Projects API: No session, email, or user ID, returning 401')
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -54,7 +54,7 @@ export async function GET() {
     
     // Get existing projects from database
     const existingProjects = await prisma.project.findMany({
-      where: { userId: session.user.id!! }
+      where: { userId: session.user.id! }
     })
 
     // Define interfaces
@@ -130,7 +130,7 @@ export async function GET() {
               description: repo.description || "Projeto importado do GitHub",
               stack,
               status,
-              userId: session.user.id!!,
+              userId: session.user.id!,
               githubRepo: repo.html_url,
               repoUrl: repo.html_url
             }
@@ -141,7 +141,7 @@ export async function GET() {
           existingProject = await prisma.project.findFirst({
             where: { 
               slug,
-              userId: session.user.id!! 
+              userId: session.user.id! 
             }
           })
         }
@@ -258,7 +258,7 @@ export async function POST(req: NextRequest) {
           { slug },
           { name }
         ],
-        userId: session.user.id!
+        userId: session.user.id
       }
     })
 
@@ -277,7 +277,7 @@ export async function POST(req: NextRequest) {
         description,
         stack: stack || "firebase",
         status: "planning",
-        userId: session.user.id!,
+        userId: session.user.id,
         ...(niche && { niche })
       }
     })
