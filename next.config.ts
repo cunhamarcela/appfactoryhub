@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async headers() {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const scriptSrc = isProduction ? "'self' https://vercel.live https://fonts.googleapis.com https://accounts.google.com/gsi/client" : "'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://fonts.googleapis.com https://accounts.google.com/gsi/client";
+    const styleSrc = isProduction ? "'self' https://fonts.googleapis.com" : "'self' 'unsafe-inline' https://fonts.googleapis.com";
+
     return [
       {
         source: '/(.*)',
@@ -31,8 +35,8 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://fonts.googleapis.com https://accounts.google.com/gsi/client",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              `script-src ${scriptSrc}`,
+              `style-src ${styleSrc}`,
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://api.openai.com https://api.github.com https://googleapis.com https://oauth2.googleapis.com https://accounts.google.com https://vercel.live wss://ws-us3.pusher.com",
