@@ -93,9 +93,11 @@ export async function GET() {
       progress: number
     }
 
-    // Transform GitHub repos into project format
-    const projects: ProjectData[] = repos.map((repo: GitHubRepo) => {
-      const existingProject = existingProjects.find(p => p.githubRepo === repo.html_url)
+    // Transform GitHub repos into project format and sync with database
+    const projects: ProjectData[] = []
+    
+    for (const repo of repos) {
+      let existingProject = existingProjects.find(p => p.githubRepo === repo.html_url)
       
       // Determine stack based on repo topics or description
       let stack = "firebase" // default
@@ -116,27 +118,71 @@ export async function GET() {
         }
       }
 
-      return {
-        id: existingProject?.id || repo.id.toString(),
-        name: repo.name,
-        slug: repo.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        description: repo.description || "Projeto sem descrição",
-        githubRepo: repo.html_url,
-        stack,
-        status,
-        createdAt: repo.created_at,
-        updatedAt: repo.updated_at,
-        lastPush: repo.pushed_at,
-        stars: repo.stargazers_count,
-        language: repo.language,
-        isPrivate: repo.private,
-        homepage: repo.homepage,
-        // Calculate progress based on commits, issues, etc.
-        progress: existingProject ? 
-          Math.min(100, Math.max(0, Math.floor(Math.random() * 100))) : // TODO: Calculate real progress
-          repo.size > 0 ? 25 : 5
+      const slug = repo.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+      
+      // If project doesn't exist in database, create it
+      if (!existingProject) {
+        try {
+          existingProject = await prisma.project.create({
+            data: {
+              name: repo.name,
+              slug,
+              description: repo.description || "Projeto importado do GitHub",
+              stack,
+              status,
+              userId: session.user.id,
+              githubRepo: repo.html_url,
+              repoUrl: repo.html_url
+            }
+          })
+        } catch (error) {
+          console.error(`Error creating project for repo ${repo.name}:`, error)
+          // If creation fails (e.g., duplicate slug), try to find existing by slug
+          existingProject = await prisma.project.findFirst({
+            where: { 
+              slug,
+              userId: session.user.id 
+            }
+          })
+        }
+      } else {
+        // Update existing project with latest GitHub data
+        try {
+          existingProject = await prisma.project.update({
+            where: { id: existingProject.id },
+            data: {
+              description: repo.description || existingProject.description,
+              status,
+              githubRepo: repo.html_url,
+              repoUrl: repo.html_url
+            }
+          })
+        } catch (error) {
+          console.error(`Error updating project ${existingProject.id}:`, error)
+        }
       }
-    })
+
+      if (existingProject) {
+        projects.push({
+          id: existingProject.id,
+          name: repo.name,
+          slug: existingProject.slug,
+          description: repo.description || "Projeto sem descrição",
+          githubRepo: repo.html_url,
+          stack,
+          status,
+          createdAt: repo.created_at,
+          updatedAt: repo.updated_at,
+          lastPush: repo.pushed_at,
+          stars: repo.stargazers_count,
+          language: repo.language,
+          isPrivate: repo.private,
+          homepage: repo.homepage,
+          // Calculate progress based on commits, issues, etc.
+          progress: repo.size > 0 ? 25 : 5
+        })
+      }
+    }
 
     // Filter out forks and focus on original repos
     const originalProjects = projects.filter((project: ProjectData) => 
