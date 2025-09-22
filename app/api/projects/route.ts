@@ -54,7 +54,7 @@ export async function GET() {
     
     // Get existing projects from database
     const existingProjects = await prisma.project.findMany({
-      where: { userId: session.user.id! }
+      where: { userId: session.user.id }
     })
 
     // Define interfaces
@@ -130,7 +130,7 @@ export async function GET() {
               description: repo.description || "Projeto importado do GitHub",
               stack,
               status,
-              userId: session.user.id!,
+              userId: session.user.id,
               githubRepo: repo.html_url,
               repoUrl: repo.html_url
             }
@@ -138,12 +138,13 @@ export async function GET() {
         } catch (error) {
           console.error(`Error creating project for repo ${repo.name}:`, error)
           // If creation fails (e.g., duplicate slug), try to find existing by slug
-          existingProject = await prisma.project.findFirst({
+          const foundProject = await prisma.project.findFirst({
             where: { 
               slug,
-              userId: session.user.id! 
+              userId: session.user.id 
             }
           })
+          existingProject = foundProject || undefined
         }
       } else {
         // Update existing project with latest GitHub data
