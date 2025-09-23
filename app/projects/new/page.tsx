@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Rocket, Database, Code, Loader2, Smartphone, Globe, Server, HardDrive } from "lucide-react"
+import { ArrowLeft, Rocket, Code, Loader2, Smartphone, Globe, Server, HardDrive } from "lucide-react"
 import Link from "next/link"
 
 interface StackCatalog {

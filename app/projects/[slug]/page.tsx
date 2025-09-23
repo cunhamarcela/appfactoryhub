@@ -11,7 +11,6 @@ import {
   DollarSign,
   Zap,
   Database,
-  RefreshCw,
   Lightbulb
 } from "lucide-react"
 import Link from "next/link"
@@ -20,7 +19,7 @@ import { CopyEnvButton } from "@/components/CopyEnvButton"
 import { CopyButton } from "@/components/CopyButton"
 import { ProjectStatusBadge } from "@/components/ProjectStatusBadge"
 import { ProjectStatusActions } from "@/components/ProjectStatusActions"
-import { ProjectSyncButton } from "@/components/ProjectSyncButton"
+import { ProjectSyncButton, ProjectSeedButton } from "@/components/ProjectSyncButton"
 
 interface ProjectPageProps {
   params: { slug: string }
@@ -238,18 +237,36 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     )}
                   </div>
                   
-                  {/* Sync Button */}
-                  {project.repoFullName && (
+                  {/* Sync and Seed Buttons */}
+                  <div className="space-y-3">
+                    {project.repoFullName && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
+                          Sincronizar informações do repositório
+                        </span>
+                        <ProjectSyncButton 
+                          projectSlug={project.slug}
+                          className="rounded-xl"
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Seed Button */}
                     <div className="flex items-center justify-between">
-                      <span className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
-                        Sincronizar informações do repositório
-                      </span>
-                      <ProjectSyncButton 
+                      <div>
+                        <span className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
+                          Criar tasks e checklists iniciais
+                        </span>
+                        <p className="text-xs" style={{ color: 'var(--foreground-secondary)', opacity: 0.7 }}>
+                          Baseado na stack: {project.techFrontend || 'flutter'} + {project.techDatabase || project.stack}
+                        </p>
+                      </div>
+                      <ProjectSeedButton 
                         projectSlug={project.slug}
                         className="rounded-xl"
                       />
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
             </div>
