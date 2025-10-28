@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     description: "Plataforma completa para desenvolvimento de aplicativos móveis com inteligência artificial.",
   },
   verification: {
-    google: "google-site-verification-code", // Adicione seu código de verificação do Google
+    google: "IpMqbyia5KL8vOBqE4teuhLkF2u4f6BZ-epoc87WoC4",
   },
   alternates: {
     canonical: "https://appfactoryhub.vercel.app",
